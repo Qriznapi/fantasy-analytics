@@ -2,7 +2,6 @@
 
 An end-to-end analytics project for **Esports World Cup 2026 Dota 2 fantasy data**. The repository combines a structured SQLite analytics layer, fantasy scoring profiles, reliability estimates, banner optimization, source provenance, deterministic natural-language query routing, and a Streamlit dashboard.
 
-> **Portfolio cleanup note.** This repository is a structured version of the original `ML-Models/Project F`. The cleanup changes project layout, documentation, and machine-specific paths; it does **not** intentionally change the underlying scoring formulas, analytical logic, stored model outputs, or conclusions.
 
 ## What is inside
 
