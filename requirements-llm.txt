@@ -1,0 +1,2 @@
+# Optional. The core analytics/query router works without an LLM.
+langchain-gigachat
