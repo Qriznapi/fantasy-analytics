@@ -148,5 +148,4 @@ See [`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md) for the source roles and cave
 - [`MODELING.md`](docs/MODELING.md) — scoring, reliability, optimizer, backtesting, and limitations.
 - [`DATA_SOURCES.md`](docs/DATA_SOURCES.md) — provenance recorded in the SQLite source registry.
 - [`DATABASE_GUIDE.md`](docs/DATABASE_GUIDE.md) — useful analytics views and SQL examples.
-- [`RESTRUCTURE_NOTES.md`](docs/RESTRUCTURE_NOTES.md) — exactly what was changed during the standalone cleanup.
 - [`notebooks/ewc2026_fact_agent_demo.ipynb`](notebooks/ewc2026_fact_agent_demo.ipynb) — compact interactive demonstration.
