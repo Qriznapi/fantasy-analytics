@@ -2,28 +2,34 @@
 
 ## Design goal
 
-The project separates **stored facts**, **derived analytics**, and **presentation/query interfaces**. The SQLite database is the central source of truth for the public analytical layer.
+The project separates **stored facts**, **enrichment/backfill**, **derived analytics**, and **presentation/query interfaces**. SQLite is the central source of truth for the public analytical layer.
 
 ```mermaid
 flowchart TD
-    S[Source snapshots / APIs] --> C[Core SQLite tables]
-    C --> P[Scoring profiles & stat catalog]
-    P --> M[Player-map / team-role fantasy scores]
-    M --> R[Reliability v2 tables]
-    M --> O[Banner optimizer tables]
-    C --> V[analytics_* public views]
-    R --> V
+    S["Dotabuff / Liquipedia / OpenDota / STRATZ"] --> C["Core SQLite tables"]
+    S --> R["Raw source payload cache"]
+    R --> E["stg_player_match_enriched_stats"]
+    C --> P["Scoring profiles and stat catalog"]
+    P --> M["Player-map and team-role fantasy scores"]
+    E --> M
+    M --> Q["Reliability v2 tables"]
+    M --> O["Banner optimizer tables"]
+    C --> V["analytics_* public views"]
+    Q --> V
     O --> V
-    V --> Q[NL router + SQL planner]
-    V --> D[Streamlit dashboard]
-    Q --> A[AgentResult: route, markdown, dataframes, sources]
+    E --> V
+    V --> N["NL router + SQL planner"]
+    V --> D["Streamlit dashboard"]
+    N --> A["AgentResult: route, markdown, dataframes, sources"]
 ```
 
 ## 1. Data layer
 
-The bundled `data/ewc_2026_fantasy_compact.sqlite` contains the original project's compact analytical database. It holds tournament/match/player data, fantasy scoring inputs, source provenance, derived predictions, evaluation records, and public views.
+The bundled [ewc_2026_fantasy_compact.sqlite](</D:/Pythonic/ds-p/fantasy-analytics/data/ewc_2026_fantasy_compact.sqlite>) contains the compact analytical database. It holds tournament, roster, player-map, fantasy-score, reliability, optimizer, provenance, and evaluation data.
 
-The public interface is intentionally centered on views named `analytics_*`, including:
+The public interface is intentionally centered on views named `analytics_*`.
+
+Current notable public views:
 
 - `analytics_player_maps`
 - `analytics_team_role_maps`
@@ -37,24 +43,53 @@ The public interface is intentionally centered on views named `analytics_*`, inc
 - `analytics_scoring_formula`
 - `analytics_reliability_backtest`
 - `analytics_db_objects`
+- `analytics_fantasy_backfill_coverage`
+- `analytics_fantasy_backfill_sanity`
 
-There are 14 public `analytics_*` views in the bundled database.
+There are **16** public `analytics_*` views in the current database snapshot.
 
-## 2. Scoring and profile construction
+## 2. Core scoring layer
 
-`src/fantasy_profile_constructor.py` provides role-aware fantasy-profile construction and recalculates profile-specific player-map and role-map scores inside SQLite.
+[fantasy_profile_constructor.py](</D:/Pythonic/ds-p/fantasy-analytics/src/fantasy_profile_constructor.py>) provides role-aware fantasy profile construction and recalculates profile-specific player-map and role-map scores inside SQLite.
 
-The source logic is preserved from the original Project F. Only the default database location was changed from a machine-specific Windows path to `data/ewc_2026_fantasy_compact.sqlite`.
+The project preserves the original stored scoring logic, but path handling was normalized to repository-relative paths.
 
-## 3. Reliability and optimizer layers
+## 3. Enrichment and backfill layer
 
-`src/fantasy_banner_optimizer.py` builds optimizer recommendations over profile-specific series scores. The database also contains the project's `reliability-v2` prediction and evaluation tables.
+This is the part that was added to make missing fantasy-stat coverage auditable and reproducible.
 
-See `MODELING.md` for the exact interpretation and limitations used by the project.
+Main pieces:
 
-## 4. Query layer
+- [stat_source_map.py](</D:/Pythonic/ds-p/fantasy-analytics/src/enrichment/stat_source_map.py>)
+  Defines source preference, field mapping, and point formulas per fantasy stat.
+- [opendota_backfill.py](</D:/Pythonic/ds-p/fantasy-analytics/src/enrichment/opendota_backfill.py>)
+  Handles schema setup, OpenDota payload extraction, staged rows, final stat-point writes, and coverage/sanity views.
+- [stratz_backfill.py](</D:/Pythonic/ds-p/fantasy-analytics/src/enrichment/stratz_backfill.py>)
+  Holds the STRATZ preflight and schema-probe scaffold for metrics still not available from OpenDota in this environment.
 
-`src/ewc_fact_agent_tools.py` provides:
+Important storage objects:
+
+- `raw_match_source_payloads`
+- `raw_match_source_status`
+- `stg_player_match_enriched_stats`
+- `fantasy_stat_backfill_audit`
+
+These let the project distinguish:
+
+1. payload fetched,
+2. value extracted,
+3. point rows rebuilt,
+4. source still missing.
+
+## 4. Reliability and optimizer layers
+
+[fantasy_banner_optimizer.py](</D:/Pythonic/ds-p/fantasy-analytics/src/fantasy_banner_optimizer.py>) builds optimizer recommendations over profile-specific series scores. The database also contains `reliability-v2` prediction and evaluation tables.
+
+See [MODELING.md](</D:/Pythonic/ds-p/fantasy-analytics/docs/MODELING.md>) for the interpretation and limitations.
+
+## 5. Query layer
+
+[ewc_fact_agent_tools.py](</D:/Pythonic/ds-p/fantasy-analytics/src/ewc_fact_agent_tools.py>) provides:
 
 - parsing of position, role, team, player, stage, and result limits;
 - deterministic routing from a natural-language question to a known analytical intent;
@@ -63,29 +98,36 @@ See `MODELING.md` for the exact interpretation and limitations used by the proje
 - source lookup from the database source cache;
 - `EWCFactAgent`, `ask(...)`, and interactive `chat(...)` entry points.
 
-The router is not dependent on an LLM. If explicitly enabled, an optional GigaChat call can polish a draft answer after the structured query has been executed.
+The router is not dependent on an LLM. If explicitly enabled, an optional GigaChat layer can polish the response after the structured query is complete.
 
-## 5. Dashboard
+## 6. Dashboard
 
-`dashboard/app.py` is a lightweight Streamlit interface over the public SQLite views. It contains filtering for position/role/team/stage and exposes fantasy, reliability, and optimizer outputs.
+[app.py](</D:/Pythonic/ds-p/fantasy-analytics/dashboard/app.py>) is a lightweight Streamlit interface over the public views. It exposes fantasy, reliability, and optimizer outputs with team/role/stage filters.
 
-## 6. Validation
+## 7. Validation
 
-`tests/regression_tests.py` checks database integrity, row-count invariants, formula consistency, support-exclusion rules, public-view count, and the expected deterministic agent routes.
+[regression_tests.py](</D:/Pythonic/ds-p/fantasy-analytics/tests/regression_tests.py>) checks:
 
-`scripts/validate_project.py` performs a broader end-to-end smoke check and then runs the regression suite.
+- database integrity;
+- row-count invariants;
+- formula consistency;
+- support-exclusion rules;
+- public-view count;
+- deterministic agent routes.
 
-## Portability changes in this repository
+[validate_project.py](</D:/Pythonic/ds-p/fantasy-analytics/scripts/validate_project.py>) performs a broader smoke check and then runs the regression suite.
 
-The original Project F used hard-coded machine-specific Windows paths. This repository resolves paths from the repository root:
+## 8. Current source-status interpretation
 
-```text
-repo root
-├── data/      # SQLite database
-├── src/       # core Python modules
-├── dashboard/ # Streamlit app
-├── tests/     # regression checks
-└── scripts/   # validation entry points
-```
+The architecture now explicitly separates:
 
-No scoring constants, stored database outputs, or model formulas were intentionally changed as part of this restructuring.
+- **real zeros**
+- **sparse-key zeros**
+- **source-missing metrics**
+
+That distinction is surfaced through:
+
+- `analytics_fantasy_backfill_coverage`
+- `analytics_fantasy_backfill_sanity`
+
+This is important because some final tables still contain historical zero rows for unsupported metrics. The coverage view, not the raw zero count alone, is the authoritative indicator of whether a stat is actually sourced.

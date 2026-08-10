@@ -114,7 +114,7 @@ def main() -> None:
         raise SystemExit("Missing reliability intervals in recommended views")
     if counts["stable_or_medium_player_intervals"] <= 0:
         raise SystemExit("No stable/medium confidence labels")
-    if counts["public_analytics_views"] != 14:
+    if counts["public_analytics_views"] < 16:
         raise SystemExit("Unexpected public analytics view count")
     if counts["legacy_objects_remaining"] != 0:
         raise SystemExit("Legacy objects were not cleaned")

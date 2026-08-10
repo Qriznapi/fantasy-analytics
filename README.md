@@ -1,64 +1,52 @@
-# Dota 2 Fantasy Analytics — EWC 2026
+# Dota 2 Fantasy Analytics - EWC 2026
 
-An end-to-end analytics project for **Esports World Cup 2026 Dota 2 fantasy data**. The repository combines a structured SQLite analytics layer, fantasy scoring profiles, reliability estimates, banner optimization, source provenance, deterministic natural-language query routing, and a Streamlit dashboard.
+An end-to-end analytics project for **Esports World Cup 2026 Dota 2 fantasy data**. It combines a compact SQLite warehouse, fantasy scoring profiles, reliability estimates, banner optimization, source-aware backfills, and a database-first fact agent.
 
+## Project snapshot
 
-## What is inside
+- **157** stored EWC 2026 maps
+- **1,570** player-map fantasy rows
+- **120** player identity records
+- **16** public `analytics_*` SQLite views
+- reliability and optimizer outputs for both players and aggregated role slots
+- notebook, dashboard, and deterministic query interface on top of the same database
 
-The included database currently contains:
+The guiding rule is simple: if a fact exists in SQLite, answers come from the database; if not, it is treated as a data-collection problem instead of being guessed.
 
-- **157** EWC 2026 maps and **1,570** player-map fantasy rows;
-- **120** player identity records;
-- **14** public `analytics_*` SQLite views;
-- player- and role-slot reliability outputs with temporal backtesting records;
-- banner/profile scoring tables and optimizer recommendations;
-- a source registry with provenance for tournament, roster, hero, fantasy-stat, and TI 2026 qualification data.
+## What this project does
 
-The project is designed around a **source-first** approach: external facts are stored with provenance, while analytical queries are answered from the structured database whenever possible.
-
-## Architecture
-
-```mermaid
-flowchart LR
-    A[Public esports / fantasy sources] --> B[SQLite core tables]
-    B --> C[Fantasy scoring profiles]
-    C --> D[Player & role-map scores]
-    D --> E[Reliability v2]
-    D --> F[Banner optimizer]
-    E --> G[analytics_* views]
-    F --> G
-    G --> H[Deterministic NL query router / SQL planner]
-    G --> I[Streamlit dashboard]
-    H --> J[Markdown answers + tables]
-```
-
-More detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+- stores tournament, player, roster, role, fantasy, and provenance data in one SQLite file
+- calculates fantasy outputs for players and role aggregates such as `core_pair`, `mid`, and `support_pair`
+- estimates fantasy reliability using ceiling-aware features and temporal validation
+- ranks stats, banners, and player options for different fantasy setups
+- supports controlled enrichment from OpenDota and future STRATZ backfills
+- exposes a fact-oriented query layer for notebook and agent-style usage
 
 ## Repository structure
 
 ```text
 fantasy-analytics/
-├── data/
-│   └── ewc_2026_fantasy_compact.sqlite
-├── src/
-│   ├── ewc_fact_agent_tools.py
-│   ├── fantasy_banner_optimizer.py
-│   └── fantasy_profile_constructor.py
-├── dashboard/
-│   └── app.py
-├── notebooks/
-│   └── ewc2026_fact_agent_demo.ipynb
-├── tests/
-│   └── regression_tests.py
-├── scripts/
-│   └── validate_project.py
-├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── MODELING.md
-│   ├── DATA_SOURCES.md
-│   └── DATABASE_GUIDE.md
-├── requirements.txt
-└── README.md
+|-- data/
+|   `-- ewc_2026_fantasy_compact.sqlite
+|-- notebooks/
+|   `-- ewc2026_fact_agent_demo.ipynb
+|-- scripts/
+|   |-- backfill_missing_fantasy_stats.py
+|   |-- rebuild_backfilled_fantasy_points.py
+|   |-- report_backfill_coverage.py
+|   `-- validate_project.py
+|-- src/
+|   |-- ewc_fact_agent_tools.py
+|   |-- fantasy_banner_optimizer.py
+|   |-- fantasy_profile_constructor.py
+|   `-- enrichment/
+|-- docs/
+|   |-- ARCHITECTURE.md
+|   |-- MODELING.md
+|   |-- DATA_SOURCES.md
+|   |-- DATABASE_GUIDE.md
+|   `-- DATA_WORKFLOW.md
+`-- tests/
 ```
 
 ## Quick start
@@ -67,85 +55,83 @@ Requires **Python 3.10+**.
 
 ```bash
 python -m venv .venv
-```
-
-Activate the environment, then install the runtime dependencies:
-
-```bash
 pip install -r requirements.txt
-```
-
-Run the full project validation:
-
-```bash
 python scripts/validate_project.py
 ```
 
-Run only the regression checks:
+Useful entry points:
 
 ```bash
 python tests/regression_tests.py
-```
-
-Launch the dashboard:
-
-```bash
+python scripts/report_backfill_coverage.py
 streamlit run dashboard/app.py
 ```
 
-The dashboard reads the bundled SQLite database from `data/`.
+## Where to start
 
-## Query interface
+- Want to understand the system: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Want to query the database: [docs/DATABASE_GUIDE.md](docs/DATABASE_GUIDE.md)
+- Want to rebuild or backfill data: [docs/DATA_WORKFLOW.md](docs/DATA_WORKFLOW.md)
+- Want source caveats and coverage notes: [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md)
+- Want scoring and modeling logic: [docs/MODELING.md](docs/MODELING.md)
+- Want a human-facing fantasy recommendation guide: [docs/EWC2026_Fantasy_Selection_Guide.docx](docs/EWC2026_Fantasy_Selection_Guide.docx)
 
-The main analytical interface lives in `src/ewc_fact_agent_tools.py`. It maps common natural-language requests to known analytics views and parameterized SQL routes.
+## Main analytical surfaces
 
-Example:
+For most analysis, use the public SQLite views rather than internal tables.
 
-```python
-from pathlib import Path
-import sys
+Most useful views:
 
-sys.path.insert(0, str(Path("src").resolve()))
-from ewc_fact_agent_tools import ask
+- `analytics_player_maps`
+- `analytics_team_role_maps`
+- `analytics_reliable_players`
+- `analytics_reliable_role_slots`
+- `analytics_optimizer_players`
+- `analytics_optimizer_role_slots`
+- `analytics_rosters`
+- `analytics_sources`
+- `analytics_fantasy_backfill_coverage`
+- `analytics_fantasy_backfill_sanity`
 
-result = ask("top 15 fantasy pos1 players from TI 2026 qualified teams", max_rows=5)
-print(result.answer_markdown)
-```
+## Notebook and agent usage
 
-The core query path is deterministic. Optional GigaChat integration is used only to polish a generated answer when `use_llm=True` and `GIGACHAT_CREDENTIALS` is configured; the structured data and SQL route remain the source of facts.
+The main interactive notebook is [notebooks/ewc2026_fact_agent_demo.ipynb](notebooks/ewc2026_fact_agent_demo.ipynb).
 
-## Main analytical components
+It supports two path modes from the first configuration cell:
 
-**Fantasy scoring.** Player-map fantasy scores combine base BattlePass-style stat points with bonuses from a selected role-aware banner profile.
+- `project` for the normal repository layout
+- `flat_colab` for flat Google Colab uploads into `/content`
 
-**Reliability v2.** The stored reliability layer is aimed at repeatable fantasy upside rather than a simple average. It uses best-series/top-tail features, recent form, spike/volatility penalties, and shrinkage toward role-level behavior.
+The deterministic query layer lives in `src/ewc_fact_agent_tools.py` and can answer database-backed questions without depending on an external LLM.
 
-**Uncertainty.** `low_estimate`, `expected_estimate`, and `high_estimate` are **heuristic uncertainty bands**, not formal statistical confidence intervals or Bayesian credible intervals.
+## Data status
 
-**Banner optimizer.** The optimizer ranks player and role-slot attractiveness for the stored fantasy profile using repeatability, upside, and spike-related features.
+Backfilled in the current pipeline:
 
-**Backtesting.** The database stores group-to-playoffs and temporal evaluation records. These are exposed for inspection rather than hidden behind a single headline metric; several role-specific segments are materially weaker than the aggregate results.
+- `first_blood`
+- `stuns`
+- `runes_grabbed`
+- `wards_placed`
+- `smokes_used`
+- `camps_stacked`
+- `courier_kills`
+- `roshan_kills`
+- `tormentor_kills`
 
-Details and limitations: [`docs/MODELING.md`](docs/MODELING.md).
+Still source-blocked in the current environment:
 
-## Data and provenance
+- `watchers_taken`
+- `lotus`
 
-The database source registry records data or cross-checks from sources including Liquipedia, OpenDota, Dotabuff, the BattlePass Fantasy guide, and a secondary Dot Esports TI 2026 participant cross-check.
+`analytics_fantasy_backfill_coverage` is the authoritative place to distinguish real zero values from unsupported or source-missing metrics.
 
-See [`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md) for the source roles and caveats recorded by the project.
+## Why this reads well in a portfolio
 
-## Important limitations
+This repository is shaped as a full analytics product rather than just a notebook dump:
 
-- The bundled database contains **157 maps**, while its metadata records an expected Dotabuff count of **159**; the original database therefore marks the build as incomplete with respect to match count.
-- Support-player fantasy statistics are recorded as incomplete/low-confidence in the project. Default reliability recommendations focus on positions 1–3 and `core_pair` / `mid_single`.
-- The reliability score is a project-specific decision-support score, not a calibrated probability of future performance.
-- The heuristic uncertainty bands should not be presented as statistical confidence intervals.
-- External source pages can change after the database snapshot was built.
-
-## Documentation
-
-- [`ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system components and data flow.
-- [`MODELING.md`](docs/MODELING.md) — scoring, reliability, optimizer, backtesting, and limitations.
-- [`DATA_SOURCES.md`](docs/DATA_SOURCES.md) — provenance recorded in the SQLite source registry.
-- [`DATABASE_GUIDE.md`](docs/DATABASE_GUIDE.md) — useful analytics views and SQL examples.
-- [`notebooks/ewc2026_fact_agent_demo.ipynb`](notebooks/ewc2026_fact_agent_demo.ipynb) — compact interactive demonstration.
+- a compact reusable database
+- documented data lineage
+- deterministic analytical interface
+- reproducible rebuild scripts
+- explicit handling of missing and uncertain source fields
+- fantasy-specific modeling layered on top of raw esports data

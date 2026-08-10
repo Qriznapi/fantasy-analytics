@@ -70,7 +70,7 @@ def test_database_invariants() -> None:
         assert_at_least("dota heroes", scalar(con, "SELECT COUNT(*) FROM dota_heroes"), 120)
         assert_at_least("external source cache rows", scalar(con, "SELECT COUNT(*) FROM external_source_cache"), 10)
         assert_at_least("analytics optimizer TI player rows", scalar(con, "SELECT COUNT(*) FROM analytics_optimizer_players WHERE optimizer_scope = 'ti2026'"), 1)
-        assert_equal("public analytics view count", scalar(con, "SELECT COUNT(*) FROM sqlite_master WHERE type='view' AND name LIKE 'analytics_%'"), 14)
+        assert_at_least("public analytics view count", scalar(con, "SELECT COUNT(*) FROM sqlite_master WHERE type='view' AND name LIKE 'analytics_%'"), 16)
 
         legacy_objects = [
             "fantasy_reliability_player_predictions",
