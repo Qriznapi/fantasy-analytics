@@ -125,6 +125,13 @@ Runs the broader validation pass and regression checks.
 - `project` for the normal repository layout with `src/` and `data/`
 - `flat_colab` for flat uploads into Google Colab such as `/content`
 
+The current demo notebook also includes ready-to-run blocks for:
+
+- role-slot analysis with `core_pair`, `mid_single`, `support_pair`
+- stage-aware inspection using `analytics_player_maps`
+- backfill coverage inspection using `analytics_fantasy_backfill_coverage`
+- replay-derived coverage inspection using `analytics_replay_metric_summary` and `analytics_replay_match_coverage`
+
 Optional manual overrides:
 
 - `CUSTOM_PROJECT_ROOT`

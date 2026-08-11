@@ -227,6 +227,46 @@ def format_stat_name(stat_name: str) -> str:
     return stat_name.replace("_", " ")
 
 
+def build_role_takeaways(role_key: str, stat_summary: pd.DataFrame) -> list[str]:
+    top = stat_summary.head(5).copy()
+    if top.empty:
+        return ["По этой роли пока нет достаточного объема данных для автоматического вывода."]
+
+    top_stats = top["stat_name"].tolist()
+    bullets: list[str] = []
+
+    if role_key == "core_pair":
+        if "creep_score" in top_stats:
+            bullets.append("Для core-пары главным фундаментом снова выглядит creep score: это самый надежный ориентир по p75 и один из лучших потолков.")
+        if "gpm" in top_stats:
+            bullets.append("GPM остается сильным дополнительным красным статом: он хорошо поддерживает фарм-направление и редко выглядит случайным всплеском.")
+        if "teamfight_participation" in top_stats:
+            bullets.append("Из зеленых опций для core почти всегда стоит смотреть на teamfight participation: он хорошо дополняет красный фармовый каркас.")
+        if "kills" in top_stats and "kills" not in top.head(3)["stat_name"].tolist():
+            bullets.append("Kills полезны скорее как потолочный бустер, а не как единственная опора баннера: по p75 они обычно слабее базового фарма.")
+
+    elif role_key == "mid_single":
+        if "runes_grabbed" in top_stats:
+            bullets.append("У mid на текущей базе особенно выделяются runes grabbed: это одна из самых сильных и повторяемых синих метрик.")
+        if "teamfight_participation" in top_stats:
+            bullets.append("Teamfight participation у мидеров снова выглядит универсальной зеленой опцией, которая хорошо сочетается и с фармом, и с темпом.")
+        if any(stat in top_stats for stat in ["creep_score", "gpm"]):
+            bullets.append("Красный каркас для mid чаще всего строится вокруг creep score и/или gpm, а не вокруг одного только kills-потолка.")
+
+    elif role_key == "support_pair":
+        if "teamfight_participation" in top_stats:
+            bullets.append("Для support-пары teamfight participation остается самым полезным зеленым ориентиром в текущей базе.")
+        if "wards_placed" in top_stats:
+            bullets.append("Из синих support-метрик особенно практичен wards placed: он стабильно попадает в верхнюю часть рейтинга по p75.")
+        if "smokes_used" in top_stats:
+            bullets.append("Smokes used тоже выглядят рабочей опцией, но интерпретировать их стоит чуть осторожнее, чем wards placed.")
+        bullets.append("Поддержки по-прежнему стоит читать осторожнее, чем core и mid: support-слот полезен, но confidence у него ниже.")
+
+    if not bullets:
+        bullets.append("Смотри в первую очередь на p75 и только потом на average: для fantasy-выбора это обычно более полезный порядок приоритета.")
+    return bullets[:4]
+
+
 def fetch_banner_profile(con: sqlite3.Connection) -> dict[str, list[dict]]:
     df = pd.read_sql_query(
         """
@@ -595,6 +635,7 @@ def build_document(db_path: Path, out_path: Path) -> None:
         payload = role_payload[role_key]
         role_label = ROLE_CONFIG[role_key]["label"]
         add_heading(doc, f"2. {role_label}", 1)
+        add_bullets(doc, build_role_takeaways(role_key, payload["stat_summary"]))
 
         add_heading(doc, "2.1 Ранжировка отдельных статистик (x1.0)", 2)
         add_body_paragraph(

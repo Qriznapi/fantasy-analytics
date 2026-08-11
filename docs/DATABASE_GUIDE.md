@@ -7,7 +7,7 @@ For ordinary analysis, prefer the public views with the `analytics_` prefix rath
 ## Main public views
 
 - `analytics_player_maps` - fantasy score for each player-map under the current default profile.
-- `analytics_team_role_maps` - team/map role aggregation (`core`, `mid`, `support`).
+- `analytics_team_role_maps` - team/map role-slot aggregation with `core_pair`, `mid_single`, and `support_pair` rollups.
 - `analytics_reliable_players` - reliability-v2 player output with low/expected/high heuristic bands.
 - `analytics_reliable_role_slots` - reliability-v2 output for `core_pair`, `mid_single`, `support_pair`.
 - `analytics_optimizer_players` - optimizer attractiveness for players.
@@ -87,6 +87,18 @@ SELECT match_date, stage_name, team_name, opponent_name,
 FROM analytics_team_role_maps
 ORDER BY match_date, team_name
 LIMIT 30;
+```
+
+### Stage-aware player-map slice
+
+```sql
+SELECT match_date, team_name, official_name, official_position,
+       stage_name, stage_bucket, is_group_stage_bucket, is_main_playoff,
+       fantasy_score
+FROM analytics_player_maps
+WHERE ti2026_qualified = 1
+ORDER BY match_date DESC, team_name, official_position
+LIMIT 20;
 ```
 
 ### Check which backfilled stats are truly covered

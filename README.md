@@ -21,7 +21,7 @@ The guiding rule is simple: if a fact exists in SQLite, answers come from the da
 ## What this project does
 
 - stores tournament, player, roster, role, fantasy, and provenance data in one SQLite file built locally
-- calculates fantasy outputs for players and role aggregates such as `core_pair`, `mid`, and `support_pair`
+- calculates fantasy outputs for players and role-slot aggregates such as `core_pair`, `mid_single`, and `support_pair`
 - estimates fantasy reliability using ceiling-aware features and temporal validation
 - ranks stats, banners, and player options for different fantasy setups
 - supports controlled enrichment from OpenDota and future STRATZ backfills
@@ -141,6 +141,13 @@ It supports two path modes from the first configuration cell:
 - `project` for the normal repository layout
 - `flat_colab` for flat Google Colab uploads into `/content`
 
+The current demo notebook is wired to the newer analytical surfaces as well:
+
+- role-slot keys `core_pair`, `mid_single`, `support_pair`
+- stage-aware fields such as `stage_name`, `stage_bucket`, `is_group_stage_bucket`, `is_main_playoff`
+- coverage views such as `analytics_fantasy_backfill_coverage`
+- replay summary views such as `analytics_replay_metric_summary` and `analytics_replay_match_coverage`
+
 The deterministic query layer lives in `src/ewc_fact_agent_tools.py` and can answer database-backed questions without depending on an external LLM.
 
 ## Data status
@@ -176,5 +183,3 @@ If you want those tables copied into the main compact database, use:
 python scripts/merge_replay_metrics_into_compact_db.py \
   --target-db data/ewc_2026_fantasy_compact.sqlite
 ```
-
-
