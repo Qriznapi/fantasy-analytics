@@ -3,6 +3,7 @@ from __future__ import annotations
 import sqlite3
 import sys
 from pathlib import Path
+import subprocess
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -25,6 +26,9 @@ REQUIRED_FILES = [
 
 
 def main() -> None:
+    print("[text-integrity]")
+    subprocess.run([sys.executable, str(PROJECT_ROOT / "scripts" / "check_text_integrity.py")], check=True)
+
     print("[files]")
     for path in REQUIRED_FILES:
         print(path, "exists=", path.exists(), "size=", path.stat().st_size if path.exists() else None)
