@@ -177,7 +177,7 @@ Current examples:
 - `watchers_taken`
 - `lotus`
 
-## Current status on August 10, 2026
+## Current status on August 11, 2026
 
 Covered by the current backfill pipeline:
 

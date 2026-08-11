@@ -20,6 +20,10 @@ For ordinary analysis, prefer the public views with the `analytics_` prefix rath
 - `analytics_db_objects` - catalog of recommended database objects.
 - `analytics_fantasy_backfill_coverage` - source coverage and zero-value semantics for backfilled stats.
 - `analytics_fantasy_backfill_sanity` - data-quality warnings for the backfill layer.
+- `analytics_replay_team_metrics_long` - replay-derived team-slot metrics in long format.
+- `analytics_replay_team_metrics_wide` - replay-derived team-slot metrics in wide format.
+- `analytics_replay_match_coverage` - replay coverage summary by match.
+- `analytics_replay_metric_summary` - replay coverage summary by metric.
 
 ## Most useful implementation tables
 
@@ -28,6 +32,8 @@ Only query these directly when you need source or rebuild detail:
 - `fantasy_player_map_stat_points`
 - `fantasy_player_map_scores`
 - `player_game_fantasy_summary`
+- `replay_team_metric_events`
+- `replay_team_metric_final`
 - `raw_match_source_payloads`
 - `raw_match_source_status`
 - `stg_player_match_enriched_stats`
@@ -114,12 +120,31 @@ ORDER BY match_id, team_name, account_id
 LIMIT 50;
 ```
 
+### One replay-backed match with team-slot counters
+
+```sql
+SELECT *
+FROM analytics_replay_team_metrics_wide
+WHERE match_id = 8904419709
+ORDER BY team_side, team_slot;
+```
+
+### Replay coverage by metric
+
+```sql
+SELECT *
+FROM analytics_replay_metric_summary
+ORDER BY stat_name;
+```
+
 ## Practical interpretation tips
 
 - If `analytics_player_maps` looks right but a single fantasy category seems odd, inspect `fantasy_player_map_stat_points`.
 - If a stat in `fantasy_player_map_stat_points` is all zeros, do **not** assume it is fully sourced. Check `analytics_fantasy_backfill_coverage`.
 - If `coverage_status = 'source_needed'` and `has_stage_evidence = 0`, the current project still lacks a confirmed extractor for that stat.
 - `sparse_zero_rows` means zero inferred from source sparsity, not broken data.
+- Replay-derived counters live at team-slot level, not per-player row level.
+- `tormentor_kills` in the replay layer is currently all zeros even after the full `157 / 157` replay pass, so treat it as unresolved extraction rather than a trustworthy gameplay signal.
 
 ## Python helpers
 

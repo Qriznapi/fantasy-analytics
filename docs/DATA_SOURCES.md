@@ -64,6 +64,12 @@ These remain blocked because the current environment does **not** provide:
 
 The STRATZ pipeline is scaffolded and can be probed, but it cannot perform live backfill without a bearer token.
 
+The project now also supports reading these variables from a local repository `.env` file, so a typical setup is:
+
+```text
+STRATZ_API_TOKEN=your_token_here
+```
+
 ## Real zeros vs unsupported zeros
 
 This distinction matters.

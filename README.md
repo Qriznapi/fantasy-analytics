@@ -7,7 +7,8 @@ An end-to-end analytics project for **Esports World Cup 2026 Dota 2 fantasy data
 - **157** stored EWC 2026 maps
 - **1,570** player-map fantasy rows
 - **120** player identity records
-- **16** public `analytics_*` SQLite views
+- **20+** public `analytics_*` SQLite views
+- full replay-derived coverage for **157 / 157** maps
 - reliability and optimizer outputs for both players and aggregated role slots
 - notebook, dashboard, and deterministic query interface on top of the same database
 
@@ -26,13 +27,23 @@ The guiding rule is simple: if a fact exists in SQLite, answers come from the da
 
 ```text
 fantasy-analytics/
+|-- app/
+|   `-- ewc_fantasy_dashboard.py
+|-- dashboard/
+|   `-- app.py
 |-- data/
-|   `-- ewc_2026_fantasy_compact.sqlite
+|   |-- ewc_2026_fantasy_compact.sqlite
+|   `-- db/ewc_2026_fantasy_compact.sqlite
+|   `-- replay_team_metrics_ewc2026_complete157.sqlite
 |-- notebooks/
+|   |-- 01_collect_to_sqlite.ipynb
+|   |-- 02_fact_agent.ipynb
 |   `-- ewc2026_fact_agent_demo.ipynb
 |-- scripts/
 |   |-- backfill_missing_fantasy_stats.py
+|   |-- merge_replay_metrics_into_compact_db.py
 |   |-- rebuild_backfilled_fantasy_points.py
+|   |-- report_replay_backfill_status.py
 |   |-- report_backfill_coverage.py
 |   `-- validate_project.py
 |-- src/
@@ -45,6 +56,7 @@ fantasy-analytics/
 |   |-- MODELING.md
 |   |-- DATA_SOURCES.md
 |   |-- DATABASE_GUIDE.md
+|   |-- REPLAY_DATABASE_GUIDE.md
 |   `-- DATA_WORKFLOW.md
 `-- tests/
 ```
@@ -66,6 +78,13 @@ python tests/regression_tests.py
 python scripts/report_backfill_coverage.py
 streamlit run dashboard/app.py
 ```
+
+The codebase resolves the compact database from either of these locations:
+
+- `data/ewc_2026_fantasy_compact.sqlite`
+- `data/db/ewc_2026_fantasy_compact.sqlite`
+
+This makes the same project folder usable both in the repository-style layout and in the earlier nested workspace layout.
 
 ## Where to start
 
@@ -92,6 +111,10 @@ Most useful views:
 - `analytics_sources`
 - `analytics_fantasy_backfill_coverage`
 - `analytics_fantasy_backfill_sanity`
+- `analytics_replay_team_metrics_long`
+- `analytics_replay_team_metrics_wide`
+- `analytics_replay_match_coverage`
+- `analytics_replay_metric_summary`
 
 ## Notebook and agent usage
 
@@ -106,7 +129,7 @@ The deterministic query layer lives in `src/ewc_fact_agent_tools.py` and can ans
 
 ## Data status
 
-Backfilled in the current pipeline:
+Backfilled in the current compact database:
 
 - `first_blood`
 - `stuns`
@@ -118,20 +141,22 @@ Backfilled in the current pipeline:
 - `roshan_kills`
 - `tormentor_kills`
 
-Still source-blocked in the current environment:
+Still source-limited in the main compact database:
 
 - `watchers_taken`
 - `lotus`
 
+Additional replay-derived coverage artifacts are stored separately and can be merged later when needed.
+
 `analytics_fantasy_backfill_coverage` is the authoritative place to distinguish real zero values from unsupported or source-missing metrics.
 
-## Why this reads well in a portfolio
+Replay-derived team-slot coverage is stored separately in:
 
-This repository is shaped as a full analytics product rather than just a notebook dump:
+- `data/replay_team_metrics_ewc2026_complete157.sqlite`
 
-- a compact reusable database
-- documented data lineage
-- deterministic analytical interface
-- reproducible rebuild scripts
-- explicit handling of missing and uncertain source fields
-- fantasy-specific modeling layered on top of raw esports data
+If you want those tables copied into the main compact database, use:
+
+```bash
+python scripts/merge_replay_metrics_into_compact_db.py \
+  --target-db data/ewc_2026_fantasy_compact.sqlite
+```

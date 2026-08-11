@@ -1,24 +1,5 @@
-# Python
 __pycache__/
-*.py[cod]
-.pytest_cache/
+*.pyc
 .ipynb_checkpoints/
-
-# Virtual environments
-.venv/
-venv/
-
-# Local configuration / credentials
-.env
-.streamlit/secrets.toml
-
-# SQLite transient files
-*.sqlite-journal
-*.sqlite-shm
-*.sqlite-wal
-
-# Local backups and generated scratch files
-*.backup
-*.bak
 .DS_Store
 Thumbs.db

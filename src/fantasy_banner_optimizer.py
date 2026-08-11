@@ -10,7 +10,20 @@ import pandas as pd
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DB_PATH = PROJECT_ROOT / "data" / "ewc_2026_fantasy_compact.sqlite"
+
+
+def resolve_db_path(project_root: Path = PROJECT_ROOT) -> Path:
+    candidates = [
+        project_root / "data" / "ewc_2026_fantasy_compact.sqlite",
+        project_root / "data" / "db" / "ewc_2026_fantasy_compact.sqlite",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]
+
+
+DB_PATH = resolve_db_path()
 
 SUPPORT_CAVEAT = (
     "Support fantasy statistics are incomplete/low-confidence in this dataset; "

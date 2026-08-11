@@ -14,7 +14,7 @@ from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
 
 
-GUIDE_DATE = "10 августа 2026"
+GUIDE_DATE = "11 августа 2026"
 
 COLOR_BLUE = "2E74B5"
 COLOR_BLUE_DARK = "1F4D78"
@@ -494,12 +494,35 @@ def fetch_support_caveat(con: sqlite3.Connection) -> str:
     return row[0] if row else ""
 
 
+def fetch_coverage_snapshot(con: sqlite3.Connection) -> dict[str, str | int]:
+    df = pd.read_sql_query(
+        """
+        SELECT stat_name, coverage_status
+        FROM analytics_fantasy_backfill_coverage
+        ORDER BY stat_name
+        """,
+        con,
+    )
+    covered = sorted(
+        df[df["coverage_status"].isin(["filled_backfill", "filled_existing", "filled_approximation"])]["stat_name"].tolist()
+    )
+    blocked = sorted(df[df["coverage_status"] == "source_needed"]["stat_name"].tolist())
+    return {
+        "covered_count": len(covered),
+        "blocked_count": len(blocked),
+        "covered_stats": ", ".join(covered),
+        "blocked_stats": ", ".join(blocked),
+    }
+
+
 def build_document(db_path: Path, out_path: Path) -> None:
     con = sqlite3.connect(str(db_path))
     banner_profile = fetch_banner_profile(con)
     profile_rankings = fetch_profile_rankings(con)
     support_caveat = fetch_support_caveat(con)
     qualified_teams = con.execute("SELECT COUNT(*) FROM analytics_ti2026_teams").fetchone()[0]
+    player_maps = con.execute("SELECT COUNT(*) FROM analytics_player_maps").fetchone()[0]
+    coverage_snapshot = fetch_coverage_snapshot(con)
 
     role_payload = {}
     for role_key in ROLE_CONFIG:
@@ -555,9 +578,17 @@ def build_document(db_path: Path, out_path: Path) -> None:
         [
             "Этот гайд описывает не просто игроков, а слоты выбора: core_pair, mid_single и support_pair.",
             "Внутри слота сначала полезно понять, какие отдельные статы сильнее, потом какие stat-комбинации работают лучше, и только затем уже выбирать конкретные команды и пары игроков.",
+            f"Текущая версия построена на полной компактной базе: {qualified_teams} TI-qualified teams и {player_maps} player-map rows.",
             "Для core и mid рекомендации заметно надежнее. Для support интерпретацию лучше держать осторожнее.",
             support_caveat or "Support-слой в этой базе менее надежен, чем core и mid.",
         ],
+    )
+    add_body_paragraph(
+        doc,
+        f"По покрытию статов: сейчас заполнено {coverage_snapshot['covered_count']} fantasy-категорий "
+        f"({coverage_snapshot['covered_stats']}). Не закрытыми остаются {coverage_snapshot['blocked_count']} "
+        f"категории: {coverage_snapshot['blocked_stats']}.",
+        muted=True,
     )
 
     for role_key in ["core_pair", "mid_single", "support_pair"]:

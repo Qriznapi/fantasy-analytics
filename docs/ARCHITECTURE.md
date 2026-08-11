@@ -25,7 +25,7 @@ flowchart TD
 
 ## 1. Data layer
 
-The bundled [ewc_2026_fantasy_compact.sqlite](</D:/Pythonic/ds-p/fantasy-analytics/data/ewc_2026_fantasy_compact.sqlite>) contains the compact analytical database. It holds tournament, roster, player-map, fantasy-score, reliability, optimizer, provenance, and evaluation data.
+The bundled database `data/ewc_2026_fantasy_compact.sqlite` contains the compact analytical database. It holds tournament, roster, player-map, fantasy-score, reliability, optimizer, provenance, and evaluation data.
 
 The public interface is intentionally centered on views named `analytics_*`.
 
@@ -46,11 +46,11 @@ Current notable public views:
 - `analytics_fantasy_backfill_coverage`
 - `analytics_fantasy_backfill_sanity`
 
-There are **16** public `analytics_*` views in the current database snapshot.
+There are **22** public `analytics_*` views in the current database snapshot.
 
 ## 2. Core scoring layer
 
-[fantasy_profile_constructor.py](</D:/Pythonic/ds-p/fantasy-analytics/src/fantasy_profile_constructor.py>) provides role-aware fantasy profile construction and recalculates profile-specific player-map and role-map scores inside SQLite.
+`src/fantasy_profile_constructor.py` provides role-aware fantasy profile construction and recalculates profile-specific player-map and role-map scores inside SQLite.
 
 The project preserves the original stored scoring logic, but path handling was normalized to repository-relative paths.
 
@@ -60,11 +60,11 @@ This is the part that was added to make missing fantasy-stat coverage auditable 
 
 Main pieces:
 
-- [stat_source_map.py](</D:/Pythonic/ds-p/fantasy-analytics/src/enrichment/stat_source_map.py>)
+- `src/enrichment/stat_source_map.py`
   Defines source preference, field mapping, and point formulas per fantasy stat.
-- [opendota_backfill.py](</D:/Pythonic/ds-p/fantasy-analytics/src/enrichment/opendota_backfill.py>)
+- `src/enrichment/opendota_backfill.py`
   Handles schema setup, OpenDota payload extraction, staged rows, final stat-point writes, and coverage/sanity views.
-- [stratz_backfill.py](</D:/Pythonic/ds-p/fantasy-analytics/src/enrichment/stratz_backfill.py>)
+- `src/enrichment/stratz_backfill.py`
   Holds the STRATZ preflight and schema-probe scaffold for metrics still not available from OpenDota in this environment.
 
 Important storage objects:
@@ -83,13 +83,13 @@ These let the project distinguish:
 
 ## 4. Reliability and optimizer layers
 
-[fantasy_banner_optimizer.py](</D:/Pythonic/ds-p/fantasy-analytics/src/fantasy_banner_optimizer.py>) builds optimizer recommendations over profile-specific series scores. The database also contains `reliability-v2` prediction and evaluation tables.
+`src/fantasy_banner_optimizer.py` builds optimizer recommendations over profile-specific series scores. The database also contains `reliability-v2` prediction and evaluation tables.
 
-See [MODELING.md](</D:/Pythonic/ds-p/fantasy-analytics/docs/MODELING.md>) for the interpretation and limitations.
+See `docs/MODELING.md` for the interpretation and limitations.
 
 ## 5. Query layer
 
-[ewc_fact_agent_tools.py](</D:/Pythonic/ds-p/fantasy-analytics/src/ewc_fact_agent_tools.py>) provides:
+`src/ewc_fact_agent_tools.py` provides:
 
 - parsing of position, role, team, player, stage, and result limits;
 - deterministic routing from a natural-language question to a known analytical intent;
@@ -102,11 +102,11 @@ The router is not dependent on an LLM. If explicitly enabled, an optional GigaCh
 
 ## 6. Dashboard
 
-[app.py](</D:/Pythonic/ds-p/fantasy-analytics/dashboard/app.py>) is a lightweight Streamlit interface over the public views. It exposes fantasy, reliability, and optimizer outputs with team/role/stage filters.
+`dashboard/app.py` is a lightweight Streamlit interface over the public views. It exposes fantasy, reliability, and optimizer outputs with team/role/stage filters.
 
 ## 7. Validation
 
-[regression_tests.py](</D:/Pythonic/ds-p/fantasy-analytics/tests/regression_tests.py>) checks:
+`tests/regression_tests.py` checks:
 
 - database integrity;
 - row-count invariants;
@@ -115,7 +115,7 @@ The router is not dependent on an LLM. If explicitly enabled, an optional GigaCh
 - public-view count;
 - deterministic agent routes.
 
-[validate_project.py](</D:/Pythonic/ds-p/fantasy-analytics/scripts/validate_project.py>) performs a broader smoke check and then runs the regression suite.
+`scripts/validate_project.py` performs a broader smoke check and then runs the regression suite.
 
 ## 8. Current source-status interpretation
 

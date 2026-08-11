@@ -15,7 +15,20 @@ import pandas as pd
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DB_PATH = PROJECT_ROOT / "data" / "ewc_2026_fantasy_compact.sqlite"
+
+
+def resolve_db_path(project_root: Path = PROJECT_ROOT) -> Path:
+    candidates = [
+        project_root / "data" / "ewc_2026_fantasy_compact.sqlite",
+        project_root / "data" / "db" / "ewc_2026_fantasy_compact.sqlite",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]
+
+
+DB_PATH = resolve_db_path()
 
 SUPPORT_CAVEAT_RU = (
     "Важно: по саппортам в этой базе статистика неполная и заметно менее полезная. "
@@ -1217,7 +1230,7 @@ class EWCFactAgent:
         q = normalize_text(question)
         plan = decompose_question(question, self.con)
         dataframes: dict[str, pd.DataFrame] = {}
-        source_notes = [f"SQLite: {self.db_path}"]
+        source_notes = [f"SQLite: {DB_PATH}"]
         sql_plan = build_sql_plan(question, self.con, limit=max_rows)
         plan.insert(0, f"SQL planner route: {sql_plan.route}; confidence={sql_plan.confidence}.")
 

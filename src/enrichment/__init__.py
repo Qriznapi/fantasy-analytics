@@ -13,4 +13,10 @@ from .opendota_backfill import (
     upsert_stage_rows,
     upsert_stat_points_from_staging,
 )
+from .replay_backfill import (
+    ensure_replay_backfill_schema,
+    ensure_replay_backfill_views,
+    import_replay_metric_csvs,
+    summarize_replay_metric_import,
+)
 from .stratz_backfill import STRATZ_SUPPORTED_STATS, run_stratz_preflight

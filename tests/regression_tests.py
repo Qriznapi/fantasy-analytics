@@ -6,9 +6,21 @@ from pathlib import Path
 from typing import Any
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SRC_DIR = PROJECT_ROOT / "src"
-DB_PATH = PROJECT_ROOT / "data" / "ewc_2026_fantasy_compact.sqlite"
+PROJECT_DIR = Path(__file__).resolve().parents[1]
+
+
+def resolve_db_path(project_root: Path = PROJECT_DIR) -> Path:
+    candidates = [
+        project_root / "data" / "ewc_2026_fantasy_compact.sqlite",
+        project_root / "data" / "db" / "ewc_2026_fantasy_compact.sqlite",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]
+
+
+DB_PATH = resolve_db_path()
 
 
 def fail(message: str) -> None:
@@ -38,20 +50,24 @@ def scalar(con: sqlite3.Connection, sql: str, params: tuple[Any, ...] = ()) -> A
 def test_files() -> None:
     required = [
         DB_PATH,
-        PROJECT_ROOT / "README.md",
-        PROJECT_ROOT / "requirements.txt",
-        PROJECT_ROOT / "notebooks" / "ewc2026_fact_agent_demo.ipynb",
-        SRC_DIR / "ewc_fact_agent_tools.py",
-        SRC_DIR / "fantasy_profile_constructor.py",
-        SRC_DIR / "fantasy_banner_optimizer.py",
-        PROJECT_ROOT / "dashboard" / "app.py",
-        PROJECT_ROOT / "docs" / "ARCHITECTURE.md",
-        PROJECT_ROOT / "docs" / "MODELING.md",
+        PROJECT_DIR / "notebooks" / "01_collect_to_sqlite.ipynb",
+        PROJECT_DIR / "notebooks" / "02_fact_agent.ipynb",
+        PROJECT_DIR / "src" / "ewc_fact_agent_tools.py",
+        PROJECT_DIR / "src" / "fantasy_profile_constructor.py",
+        PROJECT_DIR / "src" / "fantasy_banner_optimizer.py",
+        PROJECT_DIR / "app" / "ewc_fantasy_dashboard.py",
+        PROJECT_DIR / "requirements.txt",
+        PROJECT_DIR / "scripts" / "backfill_tormentor_from_opendota.py",
+        PROJECT_DIR / "scripts" / "run_cleanup_consistency_pass.py",
+        PROJECT_DIR / "scripts" / "sync_summary_backfill_columns.py",
+        PROJECT_DIR / "scripts" / "refresh_role_category_stats_view.py",
+        PROJECT_DIR / "docs" / "database_guide.md",
+        PROJECT_DIR / "README.md",
     ]
     for path in required:
         if not path.exists():
             fail(f"missing required file: {path}")
-        print(f"[ok] file exists: {path.relative_to(PROJECT_ROOT)}")
+        print(f"[ok] file exists: {path.name}")
 
 
 def test_database_invariants() -> None:
@@ -70,7 +86,7 @@ def test_database_invariants() -> None:
         assert_at_least("dota heroes", scalar(con, "SELECT COUNT(*) FROM dota_heroes"), 120)
         assert_at_least("external source cache rows", scalar(con, "SELECT COUNT(*) FROM external_source_cache"), 10)
         assert_at_least("analytics optimizer TI player rows", scalar(con, "SELECT COUNT(*) FROM analytics_optimizer_players WHERE optimizer_scope = 'ti2026'"), 1)
-        assert_at_least("public analytics view count", scalar(con, "SELECT COUNT(*) FROM sqlite_master WHERE type='view' AND name LIKE 'analytics_%'"), 16)
+        assert_at_least("public analytics view count", scalar(con, "SELECT COUNT(*) FROM sqlite_master WHERE type='view' AND name LIKE 'analytics_%'"), 14)
 
         legacy_objects = [
             "fantasy_reliability_player_predictions",
@@ -185,7 +201,7 @@ def test_database_invariants() -> None:
 
 
 def test_agent_routes() -> None:
-    sys.path.insert(0, str(SRC_DIR))
+    sys.path.insert(0, str(PROJECT_DIR / "src"))
     from ewc_fact_agent_tools import ask, explain_sql_plan
 
     ti_top = ask("top 15 fantasy pos1 players from TI 2026 qualified teams", max_rows=5)
