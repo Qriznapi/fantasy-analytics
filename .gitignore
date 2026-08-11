@@ -3,4 +3,10 @@ __pycache__/
 .ipynb_checkpoints/
 .DS_Store
 Thumbs.db
+data/*.sqlite
+data/**/*.sqlite
+data/*.sqlite-*
+data/**/*.sqlite-*
+data/*.backup*
+data/**/*.backup*
 docs/guide_render/
