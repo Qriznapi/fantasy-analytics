@@ -1,6 +1,6 @@
 # Database guide
 
-Database file: `data/ewc_2026_fantasy_compact.sqlite`
+Database file after local build: `data/ewc_2026_fantasy_compact.sqlite`
 
 For ordinary analysis, prefer the public views with the `analytics_` prefix rather than querying implementation tables directly.
 

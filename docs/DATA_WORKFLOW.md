@@ -2,6 +2,11 @@
 
 This document is the practical guide for collecting, rebuilding, and checking project data.
 
+Repository note:
+
+- the GitHub version of the project does not include the built SQLite databases
+- build the local database first by following [BUILD_DATABASE.md](BUILD_DATABASE.md)
+
 ## When to use this document
 
 Use it if you want to:
@@ -11,7 +16,7 @@ Use it if you want to:
 - check whether zeros are real or caused by source limitations
 - understand what is still blocked by missing source support
 
-For broader system design, use [ARCHITECTURE.md](ARCHITECTURE.md). For query examples, use [DATABASE_GUIDE.md](DATABASE_GUIDE.md).
+For broader system design, use [ARCHITECTURE.md](ARCHITECTURE.md). For query examples, use [database_guide.md](database_guide.md).
 
 ## Pipeline in one view
 

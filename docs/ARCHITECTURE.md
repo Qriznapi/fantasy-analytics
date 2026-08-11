@@ -25,7 +25,7 @@ flowchart TD
 
 ## 1. Data layer
 
-The bundled database `data/ewc_2026_fantasy_compact.sqlite` contains the compact analytical database. It holds tournament, roster, player-map, fantasy-score, reliability, optimizer, provenance, and evaluation data.
+The locally built database `data/ewc_2026_fantasy_compact.sqlite` contains the compact analytical database. It holds tournament, roster, player-map, fantasy-score, reliability, optimizer, provenance, and evaluation data.
 
 The public interface is intentionally centered on views named `analytics_*`.
 

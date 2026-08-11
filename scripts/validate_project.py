@@ -29,6 +29,11 @@ def main() -> None:
     for path in REQUIRED_FILES:
         print(path, "exists=", path.exists(), "size=", path.stat().st_size if path.exists() else None)
         if not path.exists():
+            if path == DB_PATH:
+                raise SystemExit(
+                    "Missing local database. Build it first using docs/BUILD_DATABASE.md "
+                    f"(expected path: {DB_PATH})."
+                )
             raise SystemExit(f"Missing required file: {path}")
 
     sys.path.insert(0, str(SRC_DIR))

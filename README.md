@@ -2,7 +2,11 @@
 
 An end-to-end analytics project for **Esports World Cup 2026 Dota 2 fantasy data**. It combines a compact SQLite warehouse, fantasy scoring profiles, reliability estimates, banner optimization, source-aware backfills, and a database-first fact agent.
 
+The repository is intentionally kept **database-free** for GitHub. Large SQLite artifacts are built locally from the provided notebooks and scripts.
+
 ## Project snapshot
+
+Current local build snapshot:
 
 - **157** stored EWC 2026 maps
 - **1,570** player-map fantasy rows
@@ -16,7 +20,7 @@ The guiding rule is simple: if a fact exists in SQLite, answers come from the da
 
 ## What this project does
 
-- stores tournament, player, roster, role, fantasy, and provenance data in one SQLite file
+- stores tournament, player, roster, role, fantasy, and provenance data in one SQLite file built locally
 - calculates fantasy outputs for players and role aggregates such as `core_pair`, `mid`, and `support_pair`
 - estimates fantasy reliability using ceiling-aware features and temporal validation
 - ranks stats, banners, and player options for different fantasy setups
@@ -32,9 +36,7 @@ fantasy-analytics/
 |-- dashboard/
 |   `-- app.py
 |-- data/
-|   |-- ewc_2026_fantasy_compact.sqlite
-|   `-- db/ewc_2026_fantasy_compact.sqlite
-|   `-- replay_team_metrics_ewc2026_complete157.sqlite
+|   `-- .gitkeep
 |-- notebooks/
 |   |-- 01_collect_to_sqlite.ipynb
 |   |-- 02_fact_agent.ipynb
@@ -55,7 +57,8 @@ fantasy-analytics/
 |   |-- ARCHITECTURE.md
 |   |-- MODELING.md
 |   |-- DATA_SOURCES.md
-|   |-- DATABASE_GUIDE.md
+|   |-- BUILD_DATABASE.md
+|   |-- database_guide.md
 |   |-- REPLAY_DATABASE_GUIDE.md
 |   `-- DATA_WORKFLOW.md
 `-- tests/
@@ -68,8 +71,20 @@ Requires **Python 3.10+**.
 ```bash
 python -m venv .venv
 pip install -r requirements.txt
-python scripts/validate_project.py
 ```
+
+Then build the local SQLite database:
+
+1. Open and run `notebooks/01_collect_to_sqlite.ipynb`.
+2. Then run:
+
+   ```bash
+   python scripts/backfill_missing_fantasy_stats.py --source opendota --match-limit 0 --write-stage --use-cached-raw
+   python scripts/rebuild_backfilled_fantasy_points.py --source opendota --run-id cached_rebuild
+   python scripts/validate_project.py
+   ```
+
+If you want the full step-by-step workflow, use [docs/BUILD_DATABASE.md](docs/BUILD_DATABASE.md).
 
 Useful entry points:
 
@@ -79,7 +94,7 @@ python scripts/report_backfill_coverage.py
 streamlit run dashboard/app.py
 ```
 
-The codebase resolves the compact database from either of these locations:
+The codebase resolves the compact database from either of these locations after you build it locally:
 
 - `data/ewc_2026_fantasy_compact.sqlite`
 - `data/db/ewc_2026_fantasy_compact.sqlite`
@@ -89,7 +104,8 @@ This makes the same project folder usable both in the repository-style layout an
 ## Where to start
 
 - Want to understand the system: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- Want to query the database: [docs/DATABASE_GUIDE.md](docs/DATABASE_GUIDE.md)
+- Want to build the database locally: [docs/BUILD_DATABASE.md](docs/BUILD_DATABASE.md)
+- Want to query the database: [docs/database_guide.md](docs/database_guide.md)
 - Want to rebuild or backfill data: [docs/DATA_WORKFLOW.md](docs/DATA_WORKFLOW.md)
 - Want source caveats and coverage notes: [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md)
 - Want scoring and modeling logic: [docs/MODELING.md](docs/MODELING.md)
@@ -150,7 +166,7 @@ Additional replay-derived coverage artifacts are stored separately and can be me
 
 `analytics_fantasy_backfill_coverage` is the authoritative place to distinguish real zero values from unsupported or source-missing metrics.
 
-Replay-derived team-slot coverage is stored separately in:
+Replay-derived team-slot coverage is usually stored separately in:
 
 - `data/replay_team_metrics_ewc2026_complete157.sqlite`
 
@@ -160,3 +176,20 @@ If you want those tables copied into the main compact database, use:
 python scripts/merge_replay_metrics_into_compact_db.py \
   --target-db data/ewc_2026_fantasy_compact.sqlite
 ```
+
+## GitHub policy
+
+The repository should not contain:
+
+- `data/ewc_2026_fantasy_compact.sqlite`
+- `data/db/ewc_2026_fantasy_compact.sqlite`
+- replay-only SQLite artifacts
+- backup SQLite files
+
+What is safe to keep in GitHub:
+
+- notebooks
+- source code
+- scripts
+- markdown documentation
+- lightweight manifests such as replay manifest JSON files
