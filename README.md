@@ -177,19 +177,4 @@ python scripts/merge_replay_metrics_into_compact_db.py \
   --target-db data/ewc_2026_fantasy_compact.sqlite
 ```
 
-## GitHub policy
 
-The repository should not contain:
-
-- `data/ewc_2026_fantasy_compact.sqlite`
-- `data/db/ewc_2026_fantasy_compact.sqlite`
-- replay-only SQLite artifacts
-- backup SQLite files
-
-What is safe to keep in GitHub:
-
-- notebooks
-- source code
-- scripts
-- markdown documentation
-- lightweight manifests such as replay manifest JSON files
