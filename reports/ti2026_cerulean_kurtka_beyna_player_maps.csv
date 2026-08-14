@@ -1,0 +1,32 @@
+﻿role_slot,team_name,official_name,official_position,match_id,match_date,series_key,opponent_name,stage_name,hero_name,won,base_points_total,profile_bonus_points,fantasy_score,creep_score_raw,creep_score_base,creep_score_weighted,teamfight_raw,teamfight_base,teamfight_weighted,kills_raw,kills_base,kills_weighted,runes_raw,runes_base,runes_weighted,lotus_raw,lotus_base,lotus_weighted,watchers_raw,watchers_base,watchers_weighted
+core_pair,TEAM VISION,Satanic,1,8943010675,2026-08-13,1130027,Team Resilience,Group Stage,Tiny,1,10623.94,6489.96,17113.9,596.0,1788.0,4470.0,0.7297,1549.95,2789.9,16.0,1712.0,4280.0,,,,,,,,,
+core_pair,TEAM VISION,Noticed,3,8943010675,2026-08-13,1130027,Team Resilience,Group Stage,Centaur Warrunner,1,7795.48,3770.11,11565.59,440.0,1320.0,3300.0,0.6757,1435.14,2583.24,4.0,428.0,1070.0,,,,,,,,,
+core_pair,TEAM VISION,Satanic,1,8943053016,2026-08-13,1130027,Team Resilience,Group Stage,Shadow Fiend,0,13394.98,6328.65,19723.64,579.0,1737.0,4342.5,0.5854,1243.32,2237.97,17.0,1819.0,4547.5,,,,,,,,,
+core_pair,TEAM VISION,Noticed,3,8943053016,2026-08-13,1130027,Team Resilience,Group Stage,Lycan,0,7035.26,4232.04,11267.3,487.0,1461.0,3652.5,0.6341,1346.93,2424.47,6.0,642.0,1605.0,,,,,,,,,
+core_pair,TEAM VISION,Satanic,1,8943098449,2026-08-13,1130027,Team Resilience,Group Stage,Nature's Prophet,1,11231.7,5837.46,17069.16,543.0,1629.0,4072.5,0.675,1433.7,2580.66,14.0,1498.0,3745.0,,,,,,,,,
+core_pair,TEAM VISION,Noticed,3,8943098449,2026-08-13,1130027,Team Resilience,Group Stage,Doom,1,8299.54,3495.06,11794.6,355.0,1065.0,2662.5,0.55,1168.2,2102.76,6.0,642.0,1605.0,,,,,,,,,
+core_pair,TEAM VISION,Satanic,1,8943267925,2026-08-13,1130069,Team Falcons,Group Stage,Lone Druid,0,11450.69,6885.9,18336.59,819.0,2457.0,6142.5,0.75,1593.0,2867.4,12.0,1284.0,3210.0,,,,,,,,,
+core_pair,TEAM VISION,Noticed,3,8943267925,2026-08-13,1130069,Team Falcons,Group Stage,Dark Seer,0,6665.15,3434.1,10099.25,460.0,1380.0,3450.0,0.7083,1504.5,2708.1,1.0,107.0,267.5,,,,,,,,,
+core_pair,TEAM VISION,Satanic,1,8943364918,2026-08-13,1130069,Team Falcons,Group Stage,Lone Druid,1,14269.8,7899.04,22168.84,887.0,2661.0,6652.5,0.6939,1473.8,2652.83,17.0,1819.0,4547.5,,,,,,,,,
+core_pair,TEAM VISION,Noticed,3,8943364918,2026-08-13,1130069,Team Falcons,Group Stage,Slardar,1,5958.05,3150.65,9108.7,334.0,1002.0,2505.0,0.5918,1257.06,2262.71,4.0,428.0,1070.0,,,,,,,,,
+core_pair,TEAM VISION,Satanic,1,8943477775,2026-08-13,1130069,Team Falcons,Group Stage,Shadow Fiend,1,16384.77,11907.34,28292.11,1369.0,4107.0,10267.5,0.6429,1365.43,2457.77,29.0,3103.0,7757.5,,,,,,,,,
+core_pair,TEAM VISION,Noticed,3,8943477775,2026-08-13,1130069,Team Falcons,Group Stage,Centaur Warrunner,1,7997.28,4978.03,12975.31,743.0,2229.0,5572.5,0.6786,1441.29,2594.31,3.0,321.0,802.5,,,,,,,,,
+core_pair,TEAM VISION,Satanic,1,8944565060,2026-08-14,1130305,BoomBoys,Group Stage,Templar Assassin,1,11555.47,5902.95,17458.41,688.0,2064.0,5160.0,0.6129,1301.81,2343.25,11.0,1177.0,2942.5,,,,,,,,,
+core_pair,TEAM VISION,Noticed,3,8944565060,2026-08-14,1130305,BoomBoys,Group Stage,Centaur Warrunner,1,8471.77,3784.64,12256.4,453.0,1359.0,3397.5,0.8387,1781.42,3206.55,2.0,214.0,535.0,,,,,,,,,
+mid_single,Team Liquid,Nisha,2,8943091110,2026-08-13,1130045,Vici Gaming,Group Stage,Lina,1,15751.21,8899.34,24650.54,758.0,2274.0,6139.8,0.7692,1633.85,4411.38,,,,20.0,2820.0,5076.0,,,,,,
+mid_single,Team Liquid,Nisha,2,8943148045,2026-08-13,1130045,Vici Gaming,Group Stage,Ember Spirit,1,9939.09,5311.55,15250.64,269.0,807.0,2178.9,0.56,1189.44,3211.49,,,,17.0,2397.0,4314.6,,,,,,
+mid_single,Team Liquid,Nisha,2,8944475950,2026-08-14,1130281,Team Yandex,Group Stage,Earth Spirit,0,6573.92,5542.73,12116.64,401.0,1203.0,3248.1,0.6875,1460.25,3942.68,,,,9.0,1269.0,2284.2,,,,,,
+mid_single,Team Liquid,Nisha,2,8944525313,2026-08-14,1130281,Team Yandex,Group Stage,Lina,1,9788.61,5115.47,14904.08,411.0,1233.0,3329.1,0.5238,1112.57,3003.94,,,,10.0,1410.0,2538.0,,,,,,
+mid_single,Team Liquid,Nisha,2,8944570404,2026-08-14,1130281,Team Yandex,Group Stage,Earth Spirit,1,9527.16,5906.61,15433.76,316.0,948.0,2559.6,0.6897,1464.83,3955.03,,,,16.0,2256.0,4060.8,,,,,,
+support_pair,Team Falcons,Cr1t-,4,8942993144,2026-08-13,1130024,LGD Gaming,Group Stage,Shadow Demon,0,6979.61,820.64,7800.24,,,,0.7727,1641.27,2461.91,,,,,,,0.0,0.0,0.0,0.0,0.0,0.0
+support_pair,Team Falcons,Sneyking,5,8942993144,2026-08-13,1130024,LGD Gaming,Group Stage,Crystal Maiden,0,9374.58,965.45,10340.03,,,,0.9091,1930.91,2896.36,,,,,,,0.0,0.0,0.0,0.0,0.0,0.0
+support_pair,Team Falcons,Cr1t-,4,8943034557,2026-08-13,1130024,LGD Gaming,Group Stage,Shadow Demon,1,9473.77,622.55,10096.32,,,,0.5862,1245.1,1867.66,,,,,,,0.0,0.0,0.0,0.0,0.0,0.0
+support_pair,Team Falcons,Sneyking,5,8943034557,2026-08-13,1130024,LGD Gaming,Group Stage,Mirana,1,13345.16,732.41,14077.57,,,,0.6897,1464.83,2197.24,,,,,,,0.0,0.0,0.0,0.0,0.0,0.0
+support_pair,Team Falcons,Cr1t-,4,8943072784,2026-08-13,1130024,LGD Gaming,Group Stage,Clockwerk,1,7378.12,670.74,8048.86,,,,0.6316,1341.47,2012.21,,,,,,,0.0,0.0,0.0,0.0,0.0,0.0
+support_pair,Team Falcons,Sneyking,5,8943072784,2026-08-13,1130024,LGD Gaming,Group Stage,Crystal Maiden,1,10245.89,558.95,10804.84,,,,0.5263,1117.89,1676.84,,,,,,,0.0,0.0,0.0,0.0,0.0,0.0
+support_pair,Team Falcons,Cr1t-,4,8943267925,2026-08-13,1130069,TEAM VISION,Group Stage,Shadow Demon,1,10213.95,763.31,10977.27,,,,0.7188,1526.63,2289.94,,,,,,,0.0,0.0,0.0,0.0,0.0,0.0
+support_pair,Team Falcons,Sneyking,5,8943267925,2026-08-13,1130069,TEAM VISION,Group Stage,Mirana,1,10583.71,829.69,11413.39,,,,0.7813,1659.38,2489.06,,,,,,,0.0,0.0,0.0,0.0,0.0,0.0
+support_pair,Team Falcons,Cr1t-,4,8943364918,2026-08-13,1130069,TEAM VISION,Group Stage,Enchantress,0,6840.02,687.18,7527.2,,,,0.6471,1374.35,2061.53,,,,,,,0.0,0.0,0.0,0.0,0.0,0.0
+support_pair,Team Falcons,Sneyking,5,8943364918,2026-08-13,1130069,TEAM VISION,Group Stage,Mirana,0,7991.56,812.12,8803.67,,,,0.7647,1624.24,2436.35,,,,,,,0.0,0.0,0.0,0.0,0.0,0.0
+support_pair,Team Falcons,Cr1t-,4,8943477775,2026-08-13,1130069,TEAM VISION,Group Stage,Lion,0,13267.15,462.92,13730.07,,,,0.4359,925.85,1388.77,,,,,,,0.0,0.0,0.0,0.0,0.0,0.0
+support_pair,Team Falcons,Sneyking,5,8943477775,2026-08-13,1130069,TEAM VISION,Group Stage,Treant Protector,0,9677.8,517.38,10195.19,,,,0.4872,1034.77,1552.15,,,,,,,0.0,0.0,0.0,0.0,0.0,0.0

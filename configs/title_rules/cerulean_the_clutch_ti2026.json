@@ -1,0 +1,26 @@
+[
+  {
+    "title_slot": "prefix",
+    "title_name": "Cerulean",
+    "role_scope": "all",
+    "bonus_pct": 11.0,
+    "condition_metric": "is_blue_title_hero",
+    "condition_operator": "=",
+    "condition_value": 1,
+    "enabled": 1,
+    "source": "client_title_rule_from_screenshot",
+    "notes": "Cerulean: +11% when playing a blue hero."
+  },
+  {
+    "title_slot": "suffix",
+    "title_name": "the Clutch",
+    "role_scope": "all",
+    "bonus_pct": 16.0,
+    "condition_metric": "is_last_possible_match_of_series",
+    "condition_operator": "=",
+    "condition_value": 1,
+    "enabled": 1,
+    "source": "client_title_rule_from_screenshot",
+    "notes": "the Clutch: +16% when playing the last possible match of a series. For TI 2026 this is modeled as map 3 of a Bo3 and map 5 of a Grand Final Bo5."
+  }
+]

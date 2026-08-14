@@ -187,7 +187,7 @@ def test_database_invariants() -> None:
         max_formula_diff = scalar(
             con,
             """
-            SELECT MAX(ABS((base_points_total + profile_bonus_points) - fantasy_score))
+            SELECT MAX(ABS((base_points_total + profile_bonus_points + COALESCE(title_bonus_points, 0)) - fantasy_score))
             FROM analytics_player_maps
             """,
         )
@@ -208,7 +208,9 @@ def test_agent_routes() -> None:
     assert_equal("agent route: TI fantasy top", ti_top.route, "top_fantasy_maps")
 
     optimizer = ask("optimizer banner pos1 players from TI 2026 qualified teams", max_rows=5)
-    assert_equal("agent route: optimizer", optimizer.route, "banner_optimizer_players")
+    if optimizer.route not in {"banner_optimizer_players", "banner_optimizer_players_v2"}:
+        fail(f"agent route: optimizer: unexpected route {optimizer.route!r}")
+    print(f"[ok] agent route: optimizer: {optimizer.route!r}")
 
     sources = ask("show source cache", max_rows=5)
     assert_equal("agent route: source cache", sources.route, "source_cache_status")

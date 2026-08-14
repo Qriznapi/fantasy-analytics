@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-import sys
+import re
 from pathlib import Path
 
 
@@ -9,11 +9,15 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOK_DIR = PROJECT_ROOT / "notebooks"
 SRC_DIR = PROJECT_ROOT / "src"
 DOCS_DIR = PROJECT_ROOT / "docs"
+SCRIPTS_DIR = PROJECT_ROOT / "scripts"
 
 SUSPICIOUS_TOKENS = [
-    "????",
-    "вЂ",
+    "?" * 4,
+    "\ufffd",
 ]
+
+# Typical mojibake pattern when UTF-8 text is decoded as Latin-1 / Windows-1252.
+MOJIBAKE_RE = re.compile(r"(?:Ð.|Ñ.|Ò.|Ã.|Â.){3,}")
 
 
 def _iter_notebook_strings(path: Path):
@@ -38,6 +42,8 @@ def _iter_text_files():
         yield path, "notebook"
     for path in SRC_DIR.rglob("*.py"):
         yield path, "text"
+    for path in SCRIPTS_DIR.rglob("*.py"):
+        yield path, "text"
     for path in DOCS_DIR.glob("*.md"):
         yield path, "text"
 
@@ -47,7 +53,18 @@ def _check_text_block(text: str) -> list[str]:
     for token in SUSPICIOUS_TOKENS:
         if token in text:
             issues.append(f"contains suspicious token {token!r}")
+    matches = MOJIBAKE_RE.findall(text)
+    if matches:
+        issues.append(f"contains possible mojibake sequence {matches[0]!r}")
     return issues
+
+
+def _safe_print(text: str) -> None:
+    try:
+        print(text)
+    except UnicodeEncodeError:
+        encoded = text.encode("ascii", "backslashreplace").decode("ascii")
+        print(encoded)
 
 
 def main() -> None:
@@ -71,12 +88,12 @@ def main() -> None:
                 failures.append(f"{path}: {issue}")
 
     if failures:
-        print("[text-integrity] failures detected:")
+        _safe_print("[text-integrity] failures detected:")
         for item in failures:
-            print("-", item)
+            _safe_print(f"- {item}")
         raise SystemExit(1)
 
-    print("[text-integrity] ok")
+    _safe_print("[text-integrity] ok")
 
 
 if __name__ == "__main__":

@@ -9,11 +9,12 @@ from math import ceil
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SRC_DIR = PROJECT_ROOT / "src"
-DB_PATH = PROJECT_ROOT / "data" / "ewc_2026_fantasy_compact.sqlite"
 sys.path.insert(0, str(SRC_DIR))
 
 import sqlite3
 
+from project_db import resolve_db_path
+from tournament_config import known_event_ids
 from enrichment.opendota_backfill import (
     OPENDOTA_SUPPORTED_STATS,
     ensure_backfill_schema,
@@ -26,7 +27,8 @@ from enrichment.stratz_backfill import STRATZ_SUPPORTED_STATS, run_stratz_prefli
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Backfill missing fantasy stats from external sources.")
-    parser.add_argument("--db-path", default=str(DB_PATH))
+    parser.add_argument("--event-id", default="ewc2026", choices=known_event_ids())
+    parser.add_argument("--db-path", default="")
     parser.add_argument("--match-limit", type=int, default=5)
     parser.add_argument("--match-ids", default="")
     parser.add_argument("--source", choices=["opendota", "stratz"], default="opendota")
@@ -44,7 +46,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    con = sqlite3.connect(args.db_path)
+    db_path = Path(args.db_path) if args.db_path else resolve_db_path(PROJECT_ROOT, event_id=args.event_id)
+    con = sqlite3.connect(db_path)
     ensure_backfill_schema(con)
     refresh_stat_catalog_metadata(con)
 
@@ -70,7 +73,8 @@ def main() -> None:
     print("[config]")
     print(json.dumps(
         {
-            "db_path": str(args.db_path),
+            "event_id": args.event_id,
+            "db_path": str(db_path),
             "source": args.source,
             "match_ids": match_ids,
             "write_raw": args.write_raw,

@@ -1,0 +1,40 @@
+{
+  "event_id": "ti2026",
+  "display_name": "The International 2026 - Dota 2",
+  "db_filename": "ti_2026_fantasy_compact.sqlite",
+  "cache_dirname": "cache_ti_2026",
+  "replay_manifest_filename": "opendota_replay_manifest_ti2026.json",
+  "replay_sidecar_filename": "replay_team_metrics_ti2026.sqlite",
+  "opendota_league_id": 19719,
+  "schema_template_event_id": "ewc2026",
+  "dotabuff_league_ids": [],
+  "liquipedia_urls": [
+    "https://liquipedia.net/dota2/The_International/2026"
+  ],
+  "official_urls": [
+    "https://store.steampowered.com/news/posts/?enddate=1779766212&feed=steam_community_announcements"
+  ],
+  "stage_rules": {
+    "group_stage_aliases": ["swiss stage", "group stage", "play-in", "elimination round"],
+    "main_playoff_aliases": ["main event", "playoffs", "upper bracket", "lower bracket", "grand final"],
+    "group_stage_start": "2026-08-13",
+    "group_stage_end": "2026-08-16",
+    "main_event_start": "2026-08-20",
+    "main_event_end": "2026-08-23"
+  },
+  "roster_source_priority": ["liquipedia", "official", "dotabuff", "opendota"],
+  "reference_seed_tables": [
+    "dota_heroes",
+    "fantasy_scoring_stat_catalog",
+    "fantasy_scoring_profiles",
+    "fantasy_scoring_profile_banners",
+    "fantasy_scoring_profile_stats",
+    "metric_definitions"
+  ],
+  "sync_policy": {
+    "mode": "incremental_live",
+    "incremental_enabled": true,
+    "finished_matches_only": true
+  },
+  "notes": "Live tournament config for TI 2026. League ids can be filled once the main-event mapping is confirmed."
+}

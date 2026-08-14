@@ -1,0 +1,14 @@
+[
+  {
+    "title_slot": "suffix",
+    "title_name": "the Clutch",
+    "role_scope": "all",
+    "bonus_pct": 0.0,
+    "condition_metric": "won",
+    "condition_operator": "=",
+    "condition_value": 1,
+    "enabled": 1,
+    "source": "manual_title_rule",
+    "notes": "Template for client-title reconstruction. Replace bonus_pct and trigger rule after the exact in-game title condition is known."
+  }
+]

@@ -13,6 +13,7 @@ Use it if you want to:
 
 - rebuild fantasy stat rows from already cached payloads
 - fetch missing OpenDota payloads and stage new rows
+- reconcile replay slot counters into player-level `watchers_taken` / `lotus`
 - check whether zeros are real or caused by source limitations
 - understand what is still blocked by missing source support
 
@@ -45,6 +46,8 @@ Backfill and provenance:
 - `raw_match_source_status`
 - `stg_player_match_enriched_stats`
 - `fantasy_stat_backfill_audit`
+- `replay_team_metric_final`
+- `replay_player_metric_resolved`
 
 ## Most common workflows
 
@@ -70,6 +73,23 @@ python scripts/rebuild_backfilled_fantasy_points.py --source opendota --run-id f
 python scripts/report_backfill_coverage.py
 ```
 
+### 2a. Incrementally refresh TI 2026
+
+Use this when TI 2026 is live and you want to pull newly completed maps into the dedicated TI database.
+
+```bash
+python scripts/sync_ti2026_matches.py --write-status-report
+python scripts/validate_ti2026_database.py
+```
+
+This workflow:
+
+- refreshes the current TI 2026 match list from OpenDota
+- re-pulls all currently available TI payloads safely into the TI database
+- refreshes stage/backfill/profile layers
+- records the run in `event_sync_runs` and `event_sync_match_log`
+- writes a compact markdown report to `reports/ti2026_status.md`
+
 ### 3. Retry only failed fetches
 
 ```bash
@@ -82,7 +102,32 @@ python scripts/backfill_missing_fantasy_stats.py --source opendota --retry-error
 python scripts/backfill_missing_fantasy_stats.py --source stratz --match-limit 1 --write-raw --schema-probe
 ```
 
-This is only an availability probe. Full live STRATZ backfill still depends on token access and extractor completion.
+This is only an availability probe. The project now also contains a browser-assisted STRATZ probe for replay-related metadata, but that path is still exploratory and does not yet produce final player-stat rows by itself.
+
+Useful exploratory helpers:
+
+```bash
+python scripts/probe_stratz_replay_download.py --help
+python scripts/download_replay_via_browser.py --help
+```
+
+### 5. Reconcile replay-derived `watchers_taken` and `lotus`
+
+Use this after replay slot metrics are already present in the compact database.
+
+```bash
+python scripts/reconcile_replay_player_metrics.py --db-path data/ewc_2026_fantasy_compact.sqlite
+python scripts/sync_summary_backfill_columns.py --db-path data/ewc_2026_fantasy_compact.sqlite
+python scripts/run_cleanup_consistency_pass.py --db-path data/ewc_2026_fantasy_compact.sqlite
+python scripts/build_unified_fantasy_metrics_table.py --db-path data/ewc_2026_fantasy_compact.sqlite
+```
+
+This path does four things:
+
+- matches replay `team_slot` to OpenDota `player_slot`
+- resolves replay rows to concrete `account_id`
+- copies canonical player-level `watchers_taken` / `lotus` rows into `fantasy_player_map_stat_points`
+- refreshes summary and unified analytics layers
 
 ## What the scripts do
 
@@ -131,12 +176,18 @@ The current demo notebook also includes ready-to-run blocks for:
 - stage-aware inspection using `analytics_player_maps`
 - backfill coverage inspection using `analytics_fantasy_backfill_coverage`
 - replay-derived coverage inspection using `analytics_replay_metric_summary` and `analytics_replay_match_coverage`
+- replay-to-player inspection using `analytics_replay_player_metrics_wide`
 
 Optional manual overrides:
 
 - `CUSTOM_PROJECT_ROOT`
 - `CUSTOM_SRC_DIR`
 - `CUSTOM_DB_PATH`
+
+Tournament switch:
+
+- `NOTEBOOK_EVENT_ID = "ti2026"` uses the live TI database
+- `NOTEBOOK_EVENT_ID = "ewc2026"` uses the historical EWC database
 
 ## How to read coverage correctly
 
@@ -184,12 +235,7 @@ Current example:
 
 The current environment still has no confirmed extractor for the metric.
 
-Current examples:
-
-- `watchers_taken`
-- `lotus`
-
-## Current status on August 11, 2026
+## Current status on August 14, 2026
 
 Covered by the current backfill pipeline:
 
@@ -201,17 +247,25 @@ Covered by the current backfill pipeline:
 - `camps_stacked`
 - `courier_kills`
 - `roshan_kills`
-- `tormentor_kills`
-
-Still blocked:
-
 - `watchers_taken`
 - `lotus`
+- `tormentor_kills`
+
+Still approximate rather than exact:
+
+- `tormentor_kills`
 
 Reason:
 
-- official STRATZ GraphQL requires a bearer token
-- no working token is configured in the current environment
+- replay counters do not expose a trustworthy last-hit owner for Tormentor in the stored dataset
+- the project therefore keeps the existing OpenDota objective-share approximation for player-level `tormentor_kills`
+
+Current TI replay note:
+
+- the TI 2026 database and replay cache layout are ready
+- replay manifest export works for TI maps
+- public `.dem.bz2` retrieval for the current TI replay host remains blocked in this environment
+- until those archives are available, `watchers_taken` / `lotus` in the TI database should be interpreted through `analytics_fantasy_backfill_coverage` rather than assumed complete
 
 ## Safe operating habits
 

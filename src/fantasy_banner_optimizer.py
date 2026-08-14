@@ -8,22 +8,11 @@ from typing import Any
 
 import pandas as pd
 
+from project_db import resolve_db_path
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-
-
-def resolve_db_path(project_root: Path = PROJECT_ROOT) -> Path:
-    candidates = [
-        project_root / "data" / "ewc_2026_fantasy_compact.sqlite",
-        project_root / "data" / "db" / "ewc_2026_fantasy_compact.sqlite",
-    ]
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
-    return candidates[0]
-
-
-DB_PATH = resolve_db_path()
+DB_PATH = resolve_db_path(PROJECT_ROOT)
 
 SUPPORT_CAVEAT = (
     "Support fantasy statistics are incomplete/low-confidence in this dataset; "
@@ -335,7 +324,7 @@ def build_player_recs(series: pd.DataFrame, profile_id: str, include_support: bo
         group = group.sort_values(["series_start_date", "series_key"])
         first = group.iloc[0]
         features = feature_block(group["best2_series_score"].tolist())
-        data_quality_label = "support_low_stat_coverage" if first["role_group"] == "support" else "usable_for_default_recommendations"
+        data_quality_label = "support_context_sensitive" if first["role_group"] == "support" else "usable_for_default_recommendations"
         if first["role_group"] == "support" and not include_support:
             continue
         rows.append(
@@ -354,7 +343,7 @@ def build_player_recs(series: pd.DataFrame, profile_id: str, include_support: bo
                 "qualification_path": first["qualification_path"],
                 "ti_region": first["ti_region"],
                 "data_quality_label": data_quality_label,
-                "recommendation_note": SUPPORT_CAVEAT if data_quality_label == "support_low_stat_coverage" else "Recommended by repeatable ceiling optimizer.",
+                "recommendation_note": SUPPORT_CAVEAT if data_quality_label == "support_context_sensitive" else "Recommended by repeatable ceiling optimizer.",
                 **features,
             }
         )
@@ -367,7 +356,7 @@ def build_role_slot_recs(series: pd.DataFrame, profile_id: str, include_support:
     for (_team, _slot), group in train.groupby(["team_name", "role_slot"], sort=False):
         group = group.sort_values(["series_start_date", "series_key"])
         first = group.iloc[0]
-        data_quality_label = "support_low_stat_coverage" if first["role_slot"] == "support_pair" else "usable_for_default_recommendations"
+        data_quality_label = "support_context_sensitive" if first["role_slot"] == "support_pair" else "usable_for_default_recommendations"
         if first["role_slot"] == "support_pair" and not include_support:
             continue
         features = feature_block(group["best2_series_score"].tolist())
@@ -387,7 +376,7 @@ def build_role_slot_recs(series: pd.DataFrame, profile_id: str, include_support:
                 "qualification_path": first["qualification_path"],
                 "ti_region": first["ti_region"],
                 "data_quality_label": data_quality_label,
-                "recommendation_note": SUPPORT_CAVEAT if data_quality_label == "support_low_stat_coverage" else "Recommended by repeatable ceiling optimizer.",
+                "recommendation_note": SUPPORT_CAVEAT if data_quality_label == "support_context_sensitive" else "Recommended by repeatable ceiling optimizer.",
                 **features,
             }
         )
@@ -426,7 +415,7 @@ def optimize_profile(
     *,
     run_id: str | None = None,
     ti2026_only: bool = False,
-    include_support: bool = False,
+    include_support: bool = True,
     persist: bool = True,
 ) -> tuple[str, pd.DataFrame, pd.DataFrame]:
     create_schema(con)
@@ -578,17 +567,33 @@ def build_default_runs(db_path: Path = DB_PATH) -> None:
         optimize_profile(
             con,
             profile_id,
-            run_id=f"optimizer_{profile_id}_all_core_mid",
+            run_id=f"optimizer_{profile_id}_all_default",
             ti2026_only=False,
-            include_support=False,
+            include_support=True,
             persist=True,
         )
         optimize_profile(
             con,
             profile_id,
-            run_id=f"optimizer_{profile_id}_ti2026_core_mid",
+            run_id=f"optimizer_{profile_id}_ti2026_default",
             ti2026_only=True,
-            include_support=False,
+            include_support=True,
+            persist=True,
+        )
+        optimize_profile(
+            con,
+            profile_id,
+            run_id=f"optimizer_{profile_id}_all_support",
+            ti2026_only=False,
+            include_support=True,
+            persist=True,
+        )
+        optimize_profile(
+            con,
+            profile_id,
+            run_id=f"optimizer_{profile_id}_ti2026_support",
+            ti2026_only=True,
+            include_support=True,
             persist=True,
         )
         create_views(con)
@@ -598,7 +603,15 @@ def build_default_runs(db_path: Path = DB_PATH) -> None:
         )
         con.execute(
             "INSERT OR REPLACE INTO metadata(key, value) VALUES (?, ?)",
-            ("fantasy_banner_optimizer_default_runs", f"optimizer_{profile_id}_all_core_mid, optimizer_{profile_id}_ti2026_core_mid"),
+            (
+                "fantasy_banner_optimizer_default_runs",
+                ",".join(
+                    [
+                        f"optimizer_{profile_id}_all_default",
+                        f"optimizer_{profile_id}_ti2026_default",
+                    ]
+                ),
+            ),
         )
         con.commit()
     finally:

@@ -63,6 +63,9 @@ STAT_DESCRIPTIONS = {
     "camps_stacked": "Неплохой синий стат для support-пары, особенно если важен хозяйственный вклад по карте.",
 }
 
+SUPPORTED_COVERAGE_STATUSES = ("filled_backfill", "filled_existing", "filled_approximation")
+FEATURED_STATS_PER_ROLE = 3
+
 
 def set_cell_shading(cell, fill: str) -> None:
     tc_pr = cell._tc.get_or_add_tcPr()
@@ -227,6 +230,61 @@ def format_stat_name(stat_name: str) -> str:
     return stat_name.replace("_", " ")
 
 
+def stat_data_confidence(row: pd.Series) -> int:
+    coverage_status = row.get("coverage_status", "")
+    stat_name = row.get("stat_name", "")
+    preferred_source = row.get("preferred_source", "")
+
+    if coverage_status == "filled_existing":
+        return 10
+    if coverage_status == "filled_backfill":
+        if preferred_source == "opendota":
+            return 9
+        return 8
+    if coverage_status == "filled_approximation":
+        if stat_name == "tormentor_kills":
+            return 6
+        return 7
+    if coverage_status == "source_needed":
+        return 2
+    return 5
+
+
+def compact_best_of_class(top_df: pd.DataFrame, limit: int = 3) -> str:
+    if top_df.empty:
+        return "-"
+    parts: list[str] = []
+    for _, row in top_df.head(limit).iterrows():
+        team_name = str(row.get("team_name", "") or "").strip()
+        player_names = str(row.get("player_names", "") or "").strip()
+        if team_name and player_names:
+            parts.append(f"{player_names} ({team_name})")
+        elif player_names:
+            parts.append(player_names)
+        elif team_name:
+            parts.append(team_name)
+    return " | ".join(parts) if parts else "-"
+
+
+def describe_stat_row(row: pd.Series) -> str:
+    stat_name = row["stat_name"]
+    coverage_status = row.get("coverage_status", "")
+    p75 = float(row.get("p75_x1", 0.0) or 0.0)
+    max_x1 = float(row.get("max_x1", 0.0) or 0.0)
+    active_rate = float(row.get("active_rate", 0.0) or 0.0)
+
+    if coverage_status == "source_needed":
+        return "Этот стат пока не подтвержден в основной базе и не должен интерпретироваться как рабочая рекомендация."
+    if coverage_status == "filled_approximation":
+        return "Стат заполнен как приближение: его полезно учитывать, но осторожнее, чем fully sourced метрики."
+    if p75 == 0.0 and max_x1 > 0.0:
+        return (
+            "Редкий событийный стат: p75 = 0, потому что в большинстве карт событие не происходит; "
+            f"при этом ненулевое значение встречается примерно на {active_rate:.0%} карт."
+        )
+    return STAT_DESCRIPTIONS.get(stat_name, "Полезный дополнительный стат в текущем датасете.")
+
+
 def build_role_takeaways(role_key: str, stat_summary: pd.DataFrame) -> list[str]:
     top = stat_summary.head(5).copy()
     if top.empty:
@@ -315,6 +373,24 @@ def build_role_map_stat_df(con: sqlite3.Connection, role_key: str) -> pd.DataFra
         GROUP BY rp.team_name
         HAVING COUNT(DISTINCT rp.official_position) = {expected_positions}
     ),
+    available_stats AS (
+        SELECT
+            sc.stat_name,
+            sc.emblem_color,
+            COALESCE(cov.coverage_status, 'filled_existing') AS coverage_status,
+            COALESCE(cov.preferred_source, 'sqlite') AS preferred_source
+        FROM fantasy_scoring_stat_catalog sc
+        LEFT JOIN analytics_fantasy_backfill_coverage cov
+          ON cov.stat_name = sc.stat_name
+        WHERE EXISTS (
+            SELECT 1
+            FROM fantasy_metric_unified fu
+            WHERE fu.stat_name = sc.stat_name
+              AND fu.source_entity_level = 'player'
+              AND fu.resolution_status IN ('player_resolved', 'player_approximated')
+              AND COALESCE(fu.raw_value, 0) <> 0
+        )
+    ),
     target_maps AS (
         SELECT
             f.match_id,
@@ -330,37 +406,47 @@ def build_role_map_stat_df(con: sqlite3.Connection, role_key: str) -> pd.DataFra
         tm.match_id,
         tm.team_name,
         rn.player_names,
-        sc.stat_name,
-        COALESCE(sc.emblem_color, 'unknown') AS color_group,
+        ast.stat_name,
+        COALESCE(ast.emblem_color, 'unknown') AS color_group,
+        ast.coverage_status,
+        ast.preferred_source,
         AVG(COALESCE(sp.base_points, 0.0)) AS points_x1
     FROM target_maps tm
     JOIN role_players rp
       ON rp.team_name = tm.team_name
     JOIN role_names rn
       ON rn.team_name = tm.team_name
-    JOIN fantasy_scoring_stat_catalog sc
+    JOIN available_stats ast
       ON 1 = 1
-    LEFT JOIN fantasy_player_map_stat_points sp
+    LEFT JOIN fantasy_metric_unified sp
       ON sp.match_id = tm.match_id
      AND sp.account_id = rp.account_id
      AND sp.team_name = rp.team_name
-     AND sp.stat_name = sc.stat_name
-    GROUP BY tm.match_id, tm.team_name, rn.player_names, sc.stat_name, sc.emblem_color
+     AND sp.stat_name = ast.stat_name
+     AND sp.source_entity_level = 'player'
+     AND sp.resolution_status IN ('player_resolved', 'player_approximated')
+    GROUP BY tm.match_id, tm.team_name, rn.player_names, ast.stat_name, ast.emblem_color, ast.coverage_status, ast.preferred_source
     """
     return pd.read_sql_query(sql, con)
 
 
 def summarize_individual_stats(role_df: pd.DataFrame) -> pd.DataFrame:
     rows = []
-    for (stat_name, color_group), group in role_df.groupby(["stat_name", "color_group"], sort=False):
+    for (stat_name, color_group, coverage_status, preferred_source), group in role_df.groupby(
+        ["stat_name", "color_group", "coverage_status", "preferred_source"], sort=False
+    ):
+        nonzero_share = float((group["points_x1"] > 0).mean()) if not group.empty else 0.0
         rows.append(
             {
                 "stat_name": stat_name,
                 "color_group": color_group,
+                "coverage_status": coverage_status,
+                "preferred_source": preferred_source,
                 "maps": int(group["match_id"].nunique()),
                 "avg_x1": round(group["points_x1"].mean(), 2),
                 "max_x1": round(group["points_x1"].max(), 2),
                 "p75_x1": round(discrete_p75(group["points_x1"]), 2),
+                "active_rate": round(nonzero_share, 4),
             }
         )
     out = pd.DataFrame(rows)
@@ -555,6 +641,18 @@ def fetch_coverage_snapshot(con: sqlite3.Connection) -> dict[str, str | int]:
     }
 
 
+def fetch_blocked_stats(con: sqlite3.Connection) -> pd.DataFrame:
+    return pd.read_sql_query(
+        """
+        SELECT stat_name, preferred_source, coverage_status
+        FROM analytics_fantasy_backfill_coverage
+        WHERE coverage_status = 'source_needed'
+        ORDER BY stat_name
+        """,
+        con,
+    )
+
+
 def build_document(db_path: Path, out_path: Path) -> None:
     con = sqlite3.connect(str(db_path))
     banner_profile = fetch_banner_profile(con)
@@ -563,21 +661,29 @@ def build_document(db_path: Path, out_path: Path) -> None:
     qualified_teams = con.execute("SELECT COUNT(*) FROM analytics_ti2026_teams").fetchone()[0]
     player_maps = con.execute("SELECT COUNT(*) FROM analytics_player_maps").fetchone()[0]
     coverage_snapshot = fetch_coverage_snapshot(con)
+    blocked_stats_df = fetch_blocked_stats(con)
 
     role_payload = {}
     for role_key in ROLE_CONFIG:
         role_df = build_role_map_stat_df(con, role_key)
         stat_summary = summarize_individual_stats(role_df)
         combo_summary, combo_team_tables = summarize_stat_combinations(role_df, role_key)
-        top_stat_team_tables = {
+        featured_stats = stat_summary.head(FEATURED_STATS_PER_ROLE)["stat_name"].tolist()
+        all_stat_team_tables = {
             row["stat_name"]: top_team_combos_for_single_stat(role_df, row["stat_name"])
-            for _, row in stat_summary.head(3).iterrows()
+            for _, row in stat_summary.iterrows()
+        }
+        top_stat_team_tables = {
+            row["stat_name"]: all_stat_team_tables[row["stat_name"]]
+            for _, row in stat_summary.iterrows()
+            if row["stat_name"] in featured_stats
         }
         role_payload[role_key] = {
             "role_df": role_df,
             "stat_summary": stat_summary,
             "combo_summary": combo_summary,
             "combo_team_tables": combo_team_tables,
+            "all_stat_team_tables": all_stat_team_tables,
             "top_stat_team_tables": top_stat_team_tables,
         }
     con.close()
@@ -643,7 +749,10 @@ def build_document(db_path: Path, out_path: Path) -> None:
             "Сначала смотри на одиночные статы внутри роли. Здесь полезнее всего p75, потому что он лучше отделяет действительно рабочие направления от красивых, но редких всплесков.",
         )
         stat_rows = []
-        for _, row in payload["stat_summary"].head(8).iterrows():
+        for _, row in payload["stat_summary"].iterrows():
+            best_of_class = compact_best_of_class(
+                payload["all_stat_team_tables"].get(row["stat_name"], pd.DataFrame())
+            )
             stat_rows.append(
                 [
                     format_stat_name(row["stat_name"]),
@@ -651,14 +760,15 @@ def build_document(db_path: Path, out_path: Path) -> None:
                     f'{row["p75_x1"]:.2f}',
                     f'{row["avg_x1"]:.2f}',
                     f'{row["max_x1"]:.2f}',
-                    STAT_DESCRIPTIONS.get(row["stat_name"], "Полезный ситуативный стат в текущей выборке."),
+                    str(int(stat_data_confidence(row))),
+                    best_of_class,
                 ]
             )
         add_simple_table(
             doc,
-            ["Стат", "Цвет", "P75 x1", "Avg x1", "Max x1", "Комментарий"],
+            ["Stat", "Color", "P75 x1", "Avg x1", "Max x1", "Trust", "Best of class"],
             stat_rows,
-            widths=[1.3, 0.75, 0.75, 0.75, 0.75, 2.2],
+            widths=[1.2, 0.7, 0.7, 0.7, 0.7, 0.6, 2.6],
         )
 
         add_heading(doc, "2.2 Лучшие сочетания статистик (x1.0)", 2)
@@ -714,33 +824,56 @@ def build_document(db_path: Path, out_path: Path) -> None:
             doc,
             "Теперь тот же вопрос, но уже для лучших stat-комбинаций x1.0. Это полезнее, когда ты реально выбираешь направление баннера, а не один конкретный стат.",
         )
-        top_combo_names = payload["combo_summary"].head(3)["combo_name"].tolist()
-        for combo_name in top_combo_names:
-            add_heading(doc, combo_name, 3)
-            top_df = payload["combo_team_tables"][combo_name]
-            rows = []
-            for _, row in top_df.head(5).iterrows():
-                rows.append(
-                    [
-                        row["team_name"],
-                        row["player_names"],
-                        f'{row["p75_x1"]:.2f}',
-                        f'{row["avg_x1"]:.2f}',
-                        f'{row["max_x1"]:.2f}',
-                        str(int(row["maps"])),
-                    ]
-                )
-            add_simple_table(
+        if payload["combo_summary"].empty or "combo_name" not in payload["combo_summary"].columns:
+            add_body_paragraph(
                 doc,
-                ["Команда", "Игроки", "P75 x1", "Avg x1", "Max x1", "Карт"],
-                rows,
-                widths=[1.35, 1.85, 0.8, 0.8, 0.8, 0.6],
+                "После фильтрации по подтвержденным stat-категориям для этой роли не осталось достаточно сильных stat-комбинаций, чтобы выделять отдельные надежные рекомендации.",
+                muted=True,
             )
+        else:
+            top_combo_names = payload["combo_summary"].head(3)["combo_name"].tolist()
+            for combo_name in top_combo_names:
+                add_heading(doc, combo_name, 3)
+                top_df = payload["combo_team_tables"][combo_name]
+                rows = []
+                for _, row in top_df.head(5).iterrows():
+                    rows.append(
+                        [
+                            row["team_name"],
+                            row["player_names"],
+                            f'{row["p75_x1"]:.2f}',
+                            f'{row["avg_x1"]:.2f}',
+                            f'{row["max_x1"]:.2f}',
+                            str(int(row["maps"])),
+                        ]
+                    )
+                add_simple_table(
+                    doc,
+                    ["Команда", "Игроки", "P75 x1", "Avg x1", "Max x1", "Карт"],
+                    rows,
+                    widths=[1.35, 1.85, 0.8, 0.8, 0.8, 0.6],
+                )
 
-    add_heading(doc, "3. Пример: текущий баннерный профиль", 1)
+    add_heading(doc, "3. Статы вне основной рекомендации", 1)
     add_body_paragraph(
         doc,
-        "Эта секция уже не про абстрактные x1.0-сочетания, а про твой конкретный сохраненный баннерный профиль. Ее лучше читать как пример практического применения всей логики выше.",
+        "Ниже перечислены fantasy-категории, которые есть на уровне модели или словаря, но пока не имеют достаточно надежного покрытия в основной базе. Их не стоит трактовать наравне с подтвержденными статами.",
+    )
+    blocked_rows = [
+        [format_stat_name(row["stat_name"]), str(row["preferred_source"]), str(row["coverage_status"])]
+        for _, row in blocked_stats_df.iterrows()
+    ]
+    add_simple_table(
+        doc,
+        ["Стат", "Предпочтительный источник", "Статус"],
+        blocked_rows,
+        widths=[2.3, 2.0, 1.7],
+    )
+
+    add_heading(doc, "4. Пример: текущий баннерный профиль", 1)
+    add_body_paragraph(
+        doc,
+        "Это пример не для замены общей x1.0-аналитики, а для того, чтобы показать, как уже готовый текущий баннерный профиль можно читать через собранные рекомендации по базе.",
     )
 
     for scope in ["core", "mid", "support"]:

@@ -21,6 +21,8 @@ def sync_summary_backfill_columns(connection: sqlite3.Connection) -> None:
         ("wards_placed", "observer_wards_placed", "wards_points"),
         ("camps_stacked", "camps_stacked", "camps_stacked_points"),
         ("runes_grabbed", "runes_grabbed", "runes_grabbed_points"),
+        ("watchers_taken", "watchers_taken", "watchers_taken_points"),
+        ("lotus", "lotus_units", "lotus_points"),
         ("roshan_kills", "roshan_kills", "roshan_points"),
         ("stuns", "stuns_sec", "stuns_points"),
         ("courier_kills", "courier_kills", "courier_points"),
@@ -173,14 +175,14 @@ def update_stat_catalog_status(connection: sqlite3.Connection) -> None:
             WHEN 'wards_placed' THEN 'filled_backfill'
             WHEN 'camps_stacked' THEN 'filled_backfill'
             WHEN 'runes_grabbed' THEN 'filled_backfill'
+            WHEN 'watchers_taken' THEN 'filled_backfill'
+            WHEN 'lotus' THEN 'filled_backfill'
             WHEN 'roshan_kills' THEN 'filled_backfill'
             WHEN 'stuns' THEN 'filled_backfill'
             WHEN 'courier_kills' THEN 'filled_backfill'
             WHEN 'first_blood' THEN 'filled_backfill'
             WHEN 'smokes_used' THEN 'filled_backfill'
             WHEN 'tormentor_kills' THEN 'filled_approximation'
-            WHEN 'watchers_taken' THEN 'source_needed'
-            WHEN 'lotus' THEN 'source_needed'
             WHEN 'kills' THEN 'filled_existing'
             WHEN 'deaths' THEN 'filled_existing'
             WHEN 'creep_score' THEN 'filled_existing'
@@ -189,6 +191,69 @@ def update_stat_catalog_status(connection: sqlite3.Connection) -> None:
             ELSE coverage_status
         END
         """
+    )
+    cur.execute(
+        """
+        UPDATE fantasy_scoring_stat_catalog
+        SET preferred_source = CASE stat_name
+                WHEN 'watchers_taken' THEN 'source2_demo'
+                WHEN 'lotus' THEN 'source2_demo'
+                ELSE preferred_source
+            END,
+            fallback_source = CASE stat_name
+                WHEN 'watchers_taken' THEN 'stratz'
+                WHEN 'lotus' THEN 'stratz'
+                ELSE fallback_source
+            END
+        WHERE stat_name IN ('watchers_taken', 'lotus')
+        """
+    )
+
+
+def normalize_battlepass_scoring_rules(connection: sqlite3.Connection) -> None:
+    cur = connection.cursor()
+    version_row = cur.execute(
+        """
+        SELECT formula_version
+        FROM battlepass_scoring_rules
+        ORDER BY formula_version DESC
+        LIMIT 1
+        """
+    ).fetchone()
+    if not version_row:
+        return
+    version = version_row[0]
+    normalized = {
+        "kills": 1.07,
+        "deaths_base": 19.50,
+        "deaths_each": -1.95,
+        "creep_score": 0.03,
+        "gpm": 0.02,
+        "madstone": 0.13,
+        "tower_kills": 3.52,
+        "observer_wards": 1.17,
+        "camps_stacked": 2.34,
+        "runes_grabbed": 1.41,
+        "watchers_taken": 1.47,
+        "lotus_used": 1.76,
+        "great_lotus_used": 3.52,
+        "greater_lotus_used": 7.04,
+        "roshan_kills": 11.72,
+        "teamfight_participation_max": 21.24,
+        "stuns_sec": 0.10,
+        "tormentor_kills": 8.79,
+        "courier_kills": 7.03,
+        "first_blood": 19.34,
+        "smoke_used": 2.93,
+    }
+    cur.executemany(
+        """
+        UPDATE battlepass_scoring_rules
+        SET coefficient = ?
+        WHERE formula_version = ?
+          AND metric = ?
+        """,
+        [(value, version, metric) for metric, value in normalized.items()],
     )
 
 
@@ -222,6 +287,8 @@ def collect_summary(connection: sqlite3.Connection) -> dict[str, object]:
     return {
         "hero_name_filled_rows": cur.execute("SELECT SUM(CASE WHEN hero_name IS NOT NULL THEN 1 ELSE 0 END) FROM player_match_stats").fetchone()[0],
         "summary_nonzero_wards": cur.execute("SELECT SUM(CASE WHEN COALESCE(observer_wards_placed,0)<>0 THEN 1 ELSE 0 END) FROM player_game_fantasy_summary").fetchone()[0],
+        "summary_nonzero_watchers": cur.execute("SELECT SUM(CASE WHEN COALESCE(watchers_taken,0)<>0 THEN 1 ELSE 0 END) FROM player_game_fantasy_summary").fetchone()[0],
+        "summary_nonzero_lotus": cur.execute("SELECT SUM(CASE WHEN COALESCE(lotus_units,0)<>0 THEN 1 ELSE 0 END) FROM player_game_fantasy_summary").fetchone()[0],
         "summary_nonzero_stuns": cur.execute("SELECT SUM(CASE WHEN COALESCE(stuns_sec,0)<>0 THEN 1 ELSE 0 END) FROM player_game_fantasy_summary").fetchone()[0],
         "summary_nonzero_tormentor": cur.execute("SELECT SUM(CASE WHEN COALESCE(tormentor_kills,0)<>0 THEN 1 ELSE 0 END) FROM player_game_fantasy_summary").fetchone()[0],
         "role_category_object_type": cur.execute("SELECT type FROM sqlite_master WHERE name='player_map_role_category_stats'").fetchone()[0],
@@ -239,6 +306,7 @@ def main() -> None:
         sync_registry_score_aggregates(connection)
         fill_player_match_stats_hero_name(connection)
         update_stat_catalog_status(connection)
+        normalize_battlepass_scoring_rules(connection)
         rebuild_player_map_role_category_stats_view(connection)
         write_cleanup_metadata(connection)
         connection.commit()

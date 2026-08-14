@@ -182,7 +182,6 @@ def reliable_role_slots(*, ti2026_only: bool, role_slot: str | None, team: str |
     view = "analytics_reliable_role_slots"
     clauses: list[str] = []
     params: list[Any] = []
-    clauses.append("recommended_default = 1")
     if ti2026_only:
         clauses.append("ti2026_qualified = 1")
     if role_slot:
@@ -265,7 +264,7 @@ def streamlit_app() -> None:
         team_raw = st.selectbox("Team", teams)
         stage_raw = st.selectbox("Stage bucket", stages)
         role_slot_raw = st.selectbox("Role slot", role_slots)
-        include_support = st.checkbox("Include supports in reliability", value=False)
+        include_support = st.checkbox("Include supports in reliability", value=True)
         limit = st.slider("Rows", min_value=5, max_value=100, value=20, step=5)
 
     position = None if position_raw == "All" else int(position_raw)

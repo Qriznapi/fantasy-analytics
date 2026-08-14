@@ -1,4 +1,4 @@
-# Architecture
+﻿# Architecture
 
 ## Design goal
 
@@ -12,7 +12,8 @@ flowchart TD
     C --> P["Scoring profiles and stat catalog"]
     P --> M["Player-map and team-role fantasy scores"]
     E --> M
-    M --> Q["Reliability v2 tables"]
+    M --> F["Prediction foundation tables"]
+    F --> Q["Foundation reliability tables"]
     M --> O["Banner optimizer tables"]
     C --> V["analytics_* public views"]
     Q --> V
@@ -33,26 +34,33 @@ Current notable public views:
 
 - `analytics_player_maps`
 - `analytics_team_role_maps`
-- `analytics_reliable_players`
-- `analytics_reliable_role_slots`
+- `analytics_reliable_players_foundation`
+- `analytics_reliable_role_slots_foundation`
 - `analytics_optimizer_players`
 - `analytics_optimizer_role_slots`
 - `analytics_rosters`
 - `analytics_ti2026_teams`
 - `analytics_sources`
 - `analytics_scoring_formula`
-- `analytics_reliability_backtest`
+- `analytics_scoring_titles`
+- `analytics_reliability_foundation_backtest`
 - `analytics_db_objects`
 - `analytics_fantasy_backfill_coverage`
 - `analytics_fantasy_backfill_sanity`
 
-There are **22** public `analytics_*` views in the current database snapshot.
+The exact count of public `analytics_*` views grows over time as new analytical layers are added; use `analytics_db_objects` as the canonical in-database catalog.
 
 ## 2. Core scoring layer
 
 `src/fantasy_profile_constructor.py` provides role-aware fantasy profile construction and recalculates profile-specific player-map and role-map scores inside SQLite.
 
-The project preserves the original stored scoring logic, but path handling was normalized to repository-relative paths.
+The current scoring stack is:
+
+1. selected-stat x1 base points for the active banner profile;
+2. selected-stat multiplier uplift (`profile_bonus_points`);
+3. optional coach-title uplift (`title_bonus_points`) from prefix/suffix rules.
+
+Coach-title rules are stored separately so that client-like comparisons can test banner-only scoring versus banner-plus-title scoring without rebuilding the whole database logic from scratch.
 
 ## 3. Enrichment and backfill layer
 
@@ -83,7 +91,9 @@ These let the project distinguish:
 
 ## 4. Reliability and optimizer layers
 
-`src/fantasy_banner_optimizer.py` builds optimizer recommendations over profile-specific series scores. The database also contains `reliability-v2` prediction and evaluation tables.
+`src/fantasy_prediction_foundation.py` builds a cleaner evaluation layer over map-level and generic series-level targets. It avoids tying all predictive work to a single hard-coded `best2_series` outcome and stores reusable baseline/evaluation rows in SQLite.
+
+`src/fantasy_banner_optimizer.py` builds optimizer recommendations over profile-specific series scores. The database also contains the newer foundation reliability tables alongside the legacy reliability-v2 layer.
 
 See `docs/MODELING.md` for the interpretation and limitations.
 
@@ -131,3 +141,4 @@ That distinction is surfaced through:
 - `analytics_fantasy_backfill_sanity`
 
 This is important because some final tables still contain historical zero rows for unsupported metrics. The coverage view, not the raw zero count alone, is the authoritative indicator of whether a stat is actually sourced.
+

@@ -13,6 +13,7 @@ REQUIRED_FILES = [
     DB_PATH,
     PROJECT_ROOT / "README.md",
     PROJECT_ROOT / "requirements.txt",
+    PROJECT_ROOT / "notebooks" / "02_fact_agent.ipynb",
     PROJECT_ROOT / "notebooks" / "ewc2026_fact_agent_demo.ipynb",
     SRC_DIR / "ewc_fact_agent_tools.py",
     SRC_DIR / "fantasy_profile_constructor.py",
@@ -143,7 +144,7 @@ def main() -> None:
     )
     print("\n[optimizer route]", opt.route)
     print(opt.answer_markdown[:1000])
-    if opt.route != "banner_optimizer_players":
+    if opt.route not in {"banner_optimizer_players", "banner_optimizer_players_v2"}:
         raise SystemExit("Optimizer route failed")
 
     planner = ask(

@@ -13,6 +13,8 @@ STAT_COLUMN_MAP = [
     ("wards_placed", "observer_wards_placed", "wards_points"),
     ("camps_stacked", "camps_stacked", "camps_stacked_points"),
     ("runes_grabbed", "runes_grabbed", "runes_grabbed_points"),
+    ("watchers_taken", "watchers_taken", "watchers_taken_points"),
+    ("lotus", "lotus_units", "lotus_points"),
     ("roshan_kills", "roshan_kills", "roshan_points"),
     ("stuns", "stuns_sec", "stuns_points"),
     ("courier_kills", "courier_kills", "courier_points"),

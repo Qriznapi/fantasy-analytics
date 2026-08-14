@@ -1,0 +1,10 @@
+query($id: Long!) {
+  match(id: $id) {
+    id
+    clusterId
+    replaySalt
+    didRequestDownload
+    parsedDateTime
+    statsDateTime
+  }
+}

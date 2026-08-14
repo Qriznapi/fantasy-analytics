@@ -1,0 +1,19 @@
+﻿role_slot,team_name,match_id,match_date,series_key,opponent_name,stage_name,player_names,hero_names,role_slot_fantasy_score,stored_player_scores_sum,data_quality_note
+core_pair,TEAM VISION,8943010675,2026-08-13,1130027,Team Resilience,Group Stage,"Satanic, Noticed","Tiny, Centaur Warrunner",14339.75,28679.49,complete_official_positions
+core_pair,TEAM VISION,8943053016,2026-08-13,1130027,Team Resilience,Group Stage,"Satanic, Noticed","Shadow Fiend, Lycan",15495.47,30990.94,complete_official_positions
+core_pair,TEAM VISION,8943098449,2026-08-13,1130027,Team Resilience,Group Stage,"Satanic, Noticed","Nature's Prophet, Doom",14431.88,28863.76,complete_official_positions
+core_pair,TEAM VISION,8943267925,2026-08-13,1130069,Team Falcons,Group Stage,"Satanic, Noticed","Lone Druid, Dark Seer",14217.92,28435.84,complete_official_positions
+core_pair,TEAM VISION,8943364918,2026-08-13,1130069,Team Falcons,Group Stage,"Satanic, Noticed","Lone Druid, Slardar",15638.77,31277.54,complete_official_positions
+core_pair,TEAM VISION,8943477775,2026-08-13,1130069,Team Falcons,Group Stage,"Satanic, Noticed","Shadow Fiend, Centaur Warrunner",20633.71,41267.42,complete_official_positions
+core_pair,TEAM VISION,8944565060,2026-08-14,1130305,BoomBoys,Group Stage,"Satanic, Noticed","Templar Assassin, Centaur Warrunner",14857.4,29714.81,complete_official_positions
+mid_single,Team Liquid,8943091110,2026-08-13,1130045,Vici Gaming,Group Stage,Nisha,Lina,24650.54,24650.54,single_mid_player
+mid_single,Team Liquid,8943148045,2026-08-13,1130045,Vici Gaming,Group Stage,Nisha,Ember Spirit,15250.64,15250.64,single_mid_player
+mid_single,Team Liquid,8944475950,2026-08-14,1130281,Team Yandex,Group Stage,Nisha,Earth Spirit,12116.64,12116.64,single_mid_player
+mid_single,Team Liquid,8944525313,2026-08-14,1130281,Team Yandex,Group Stage,Nisha,Lina,14904.08,14904.08,single_mid_player
+mid_single,Team Liquid,8944570404,2026-08-14,1130281,Team Yandex,Group Stage,Nisha,Earth Spirit,15433.76,15433.76,single_mid_player
+support_pair,Team Falcons,8942993144,2026-08-13,1130024,LGD Gaming,Group Stage,"Cr1t-, Sneyking","Shadow Demon, Crystal Maiden",9070.14,18140.27,complete_official_positions
+support_pair,Team Falcons,8943034557,2026-08-13,1130024,LGD Gaming,Group Stage,"Cr1t-, Sneyking","Shadow Demon, Mirana",12086.94,24173.89,complete_official_positions
+support_pair,Team Falcons,8943072784,2026-08-13,1130024,LGD Gaming,Group Stage,"Cr1t-, Sneyking","Clockwerk, Crystal Maiden",9426.85,18853.7,complete_official_positions
+support_pair,Team Falcons,8943267925,2026-08-13,1130069,TEAM VISION,Group Stage,"Cr1t-, Sneyking","Shadow Demon, Mirana",11195.33,22390.66,complete_official_positions
+support_pair,Team Falcons,8943364918,2026-08-13,1130069,TEAM VISION,Group Stage,"Cr1t-, Sneyking","Enchantress, Mirana",8165.43,16330.87,complete_official_positions
+support_pair,Team Falcons,8943477775,2026-08-13,1130069,TEAM VISION,Group Stage,"Cr1t-, Sneyking","Lion, Treant Protector",11962.63,23925.26,complete_official_positions

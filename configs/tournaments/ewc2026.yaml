@@ -1,0 +1,33 @@
+{
+  "event_id": "ewc2026",
+  "display_name": "Esports World Cup 2026 - Dota 2",
+  "db_filename": "ewc_2026_fantasy_compact.sqlite",
+  "cache_dirname": "cache_ewc_2026",
+  "replay_manifest_filename": "opendota_replay_manifest_ewc2026_complete157.json",
+  "replay_sidecar_filename": "replay_team_metrics_ewc2026_complete157.sqlite",
+  "opendota_league_id": 19785,
+  "schema_template_event_id": "ewc2026",
+  "dotabuff_league_ids": [19785],
+  "liquipedia_urls": [
+    "https://liquipedia.net/dota2/Esports_World_Cup/2026"
+  ],
+  "official_urls": [],
+  "stage_rules": {
+    "group_stage_aliases": ["group stage", "survival stage", "play-in", "swiss stage"],
+    "main_playoff_aliases": ["playoffs", "main event", "upper bracket", "lower bracket", "grand final"]
+  },
+  "roster_source_priority": ["liquipedia", "dotabuff", "opendota"],
+  "reference_seed_tables": [
+    "dota_heroes",
+    "fantasy_scoring_stat_catalog",
+    "fantasy_scoring_profiles",
+    "fantasy_scoring_profile_banners",
+    "fantasy_scoring_profile_stats",
+    "metric_definitions"
+  ],
+  "sync_policy": {
+    "mode": "historical_snapshot",
+    "incremental_enabled": false
+  },
+  "notes": "Canonical historical event snapshot used as the initial schema/reference template."
+}

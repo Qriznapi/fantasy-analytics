@@ -1,0 +1,45 @@
+{
+  "profile_id": "ti2026_cerulean_kurtka_beyna_client_banner",
+  "banner_total_best_series_score": 99331.62,
+  "role_final": [
+    {
+      "role_slot": "core_pair",
+      "team_name": "TEAM VISION",
+      "series_key": "1130069",
+      "maps_in_series": 3,
+      "best_map_1": 20633.71,
+      "best_map_2": 15638.77,
+      "best2_series_score": 36272.48,
+      "opponents": "Team Falcons / Team Falcons / Team Falcons",
+      "map_ids": "8943267925, 8943364918, 8943477775"
+    },
+    {
+      "role_slot": "mid_single",
+      "team_name": "Team Liquid",
+      "series_key": "1130045",
+      "maps_in_series": 2,
+      "best_map_1": 24650.54,
+      "best_map_2": 15250.64,
+      "best2_series_score": 39901.18,
+      "opponents": "Vici Gaming / Vici Gaming",
+      "map_ids": "8943091110, 8943148045"
+    },
+    {
+      "role_slot": "support_pair",
+      "team_name": "Team Falcons",
+      "series_key": "1130069",
+      "maps_in_series": 3,
+      "best_map_1": 11962.63,
+      "best_map_2": 11195.33,
+      "best2_series_score": 23157.96,
+      "opponents": "TEAM VISION / TEAM VISION / TEAM VISION",
+      "map_ids": "8943267925, 8943364918, 8943477775"
+    }
+  ],
+  "files": {
+    "player_maps": "D:\\Codex\\2026-08-05\\referenced-chatgpt-conversation-this-is-an\\work\\project-f\\reports\\ti2026_cerulean_kurtka_beyna_player_maps.csv",
+    "role_maps": "D:\\Codex\\2026-08-05\\referenced-chatgpt-conversation-this-is-an\\work\\project-f\\reports\\ti2026_cerulean_kurtka_beyna_role_maps.csv",
+    "role_best_series": "D:\\Codex\\2026-08-05\\referenced-chatgpt-conversation-this-is-an\\work\\project-f\\reports\\ti2026_cerulean_kurtka_beyna_role_best_series.csv",
+    "report_md": "D:\\Codex\\2026-08-05\\referenced-chatgpt-conversation-this-is-an\\work\\project-f\\reports\\ti2026_cerulean_kurtka_beyna.md"
+  }
+}
