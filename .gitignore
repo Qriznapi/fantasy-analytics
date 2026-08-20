@@ -1,12 +1,39 @@
+# Python and editor state
+.venv/
 __pycache__/
-*.pyc
+*.py[cod]
 .ipynb_checkpoints/
+.streamlit/
 .DS_Store
 Thumbs.db
-data/*.sqlite
+
+# Local secrets
+.env
+!.env.example
+
+# Local tournament data, replay caches, and database sidecars
+data/*
+!data/.gitkeep
+!data/README.md
 data/**/*.sqlite
-data/*.sqlite-*
 data/**/*.sqlite-*
-data/*.backup*
 data/**/*.backup*
+data/raw/
+data/cache*/
+*.dem
+*.dem.bz2
+
+# Generated ML artifacts and experiment output
+models/*
+!models/.gitkeep
+reports/*
+!reports/.gitkeep
+tmp/*
+!tmp/.gitkeep
+*.pt
+*.joblib
+*.log
+
+# Generated documents and local screenshots
 docs/guide_render/
+*.docx

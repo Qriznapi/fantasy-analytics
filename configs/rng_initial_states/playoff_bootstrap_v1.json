@@ -1,0 +1,23 @@
+{
+  "preset_id": "playoff_bootstrap_v1",
+  "display_name": "Playoff initial-state bootstrap v1",
+  "description": "Scaffold for TI 2026 playoff banner initial-state generation. Current assumption: the top 3 slots are preserved from the seeded state and the bottom 2 are sampled. Exact start-state probabilities should be updated later from user-supplied initial screenshots.",
+  "source_mode": "screenshots_pending_empirical_bootstrap",
+  "role_rules": {
+    "core": {
+      "fixed_slots": [1, 2, 3],
+      "sampled_slots": [4, 5],
+      "sampling_notes": "Bottom 2 slots should later be estimated from observed client start screens."
+    },
+    "mid": {
+      "fixed_slots": [1, 2, 3],
+      "sampled_slots": [4, 5],
+      "sampling_notes": "Bottom 2 slots should later be estimated from observed client start screens."
+    },
+    "support": {
+      "fixed_slots": [1, 2, 3],
+      "sampled_slots": [4, 5],
+      "sampling_notes": "Bottom 2 slots should later be estimated from observed client start screens."
+    }
+  }
+}

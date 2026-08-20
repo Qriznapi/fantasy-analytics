@@ -1,0 +1,35 @@
+{
+  "scenario_set_id": "rng_robustness_v1",
+  "description": "Matched robustness scenarios. The empirical preset is primary; uniform is a deliberately conservative stress test, not a client-frequency claim.",
+  "scenarios": [
+    {
+      "scenario_id": "observed_balanced_fixed",
+      "objective_mode": "balanced",
+      "token_preset_path": "configs/rng_tokens/observed_run1_8_empirical_v1.json"
+    },
+    {
+      "scenario_id": "observed_safe_starters",
+      "objective_mode": "safe",
+      "token_preset_path": "configs/rng_tokens/observed_run1_8_empirical_v1.json",
+      "initial_state_preset_path": "configs/rng_initial_states/starters_observed_v1.json"
+    },
+    {
+      "scenario_id": "observed_balanced_starters",
+      "objective_mode": "balanced",
+      "token_preset_path": "configs/rng_tokens/observed_run1_8_empirical_v1.json",
+      "initial_state_preset_path": "configs/rng_initial_states/starters_observed_v1.json"
+    },
+    {
+      "scenario_id": "observed_ceiling_starters",
+      "objective_mode": "ceiling",
+      "token_preset_path": "configs/rng_tokens/observed_run1_8_empirical_v1.json",
+      "initial_state_preset_path": "configs/rng_initial_states/starters_observed_v1.json"
+    },
+    {
+      "scenario_id": "uniform_balanced_starters_stress",
+      "objective_mode": "balanced",
+      "token_preset_path": "configs/rng_tokens/placeholder_uniform_v1.json",
+      "initial_state_preset_path": "configs/rng_initial_states/starters_observed_v1.json"
+    }
+  ]
+}

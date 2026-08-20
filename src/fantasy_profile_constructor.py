@@ -7,6 +7,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from fantasy_complex_banner_schema import (
+    PLAYOFF_TEMPLATE_ID,
+    ensure_complex_banner_schema,
+    infer_slot_count_per_role,
+    seed_default_complex_banner_templates,
+)
 from project_db import resolve_db_path
 
 
@@ -88,10 +94,44 @@ def rebuild_public_scoring_views(connection: sqlite3.Connection) -> None:
           ON ti.team_name = s.team_name
         """
     )
+    cur.execute("DROP VIEW IF EXISTS analytics_scoring_formula")
+    cur.execute(
+        """
+        CREATE VIEW analytics_scoring_formula AS
+        SELECT
+            b.profile_id,
+            b.role_scope,
+            b.banner_slot,
+            b.stat_name,
+            b.multiplier,
+            b.quality_tier,
+            b.trait,
+            COALESCE(s.enabled, 1) AS enabled,
+            COALESCE(c.color_group, sc.emblem_color) AS color_group,
+            c.slot_kind,
+            c.quality_bonus_pct,
+            c.trait_bonus_pct,
+            c.locked_flag,
+            COALESCE(c.notes, b.notes, s.notes) AS notes
+        FROM fantasy_scoring_profile_banners b
+        LEFT JOIN fantasy_scoring_profile_stats s
+          ON s.profile_id = b.profile_id
+         AND s.role_scope = b.role_scope
+         AND s.stat_name = b.stat_name
+        LEFT JOIN fantasy_banner_instance_slots c
+          ON c.profile_id = b.profile_id
+         AND c.role_scope = b.role_scope
+         AND c.slot_index = b.banner_slot
+        LEFT JOIN fantasy_scoring_stat_catalog sc
+          ON sc.stat_name = b.stat_name
+        """
+    )
 
 
 def ensure_title_schema(connection: sqlite3.Connection) -> None:
     cur = connection.cursor()
+    ensure_complex_banner_schema(connection)
+    seed_default_complex_banner_templates(connection)
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS fantasy_scoring_profile_titles (
@@ -304,6 +344,103 @@ def _title_rows_from_spec(
     return rows
 
 
+def sync_complex_banner_profile(
+    connection: sqlite3.Connection,
+    profile_id: str,
+    banner_spec: dict[str, list[dict[str, Any] | tuple[str, float]]],
+    *,
+    event_id: str,
+    profile_name: str,
+    template_id: str | None,
+    source_label: str,
+    notes: str,
+) -> None:
+    cur = connection.cursor()
+    ensure_complex_banner_schema(connection)
+    slot_count = infer_slot_count_per_role(banner_spec)
+    cur.execute(
+        """
+        INSERT OR REPLACE INTO fantasy_banner_instances(
+            profile_id, event_id, template_id, profile_name, source_label,
+            slot_count_per_role, notes, updated_at_utc
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        """,
+        (
+            profile_id,
+            event_id,
+            template_id,
+            profile_name,
+            source_label,
+            slot_count,
+            notes,
+        ),
+    )
+    cur.execute("DELETE FROM fantasy_banner_instance_slots WHERE profile_id = ?", (profile_id,))
+    rows: list[tuple[Any, ...]] = []
+    for role_scope, entries in banner_spec.items():
+        if role_scope not in VALID_ROLE_SCOPES:
+            continue
+        for index, entry in enumerate(entries, start=1):
+            if isinstance(entry, dict):
+                stat_name = str(entry["stat_name"])
+                multiplier = float(entry.get("multiplier", 1.0))
+                color_group = entry.get("color_group")
+                quality_tier = entry.get("quality_tier")
+                quality_bonus_pct = entry.get("quality_bonus_pct")
+                trait_name = entry.get("trait") or entry.get("trait_name")
+                trait_bonus_pct = entry.get("trait_bonus_pct")
+                adjacency_group = entry.get("adjacency_group")
+                slot_kind = str(entry.get("slot_kind", "stat_slot"))
+                enabled = int(entry.get("enabled", 1))
+                locked_flag = int(entry.get("locked_flag", 0))
+                slot_notes = str(entry.get("notes", "complex banner slot"))
+            else:
+                stat_name = str(entry[0])
+                multiplier = float(entry[1])
+                color_group = None
+                quality_tier = None
+                quality_bonus_pct = None
+                trait_name = None
+                trait_bonus_pct = None
+                adjacency_group = None
+                slot_kind = "stat_slot"
+                enabled = 1
+                locked_flag = 0
+                slot_notes = "complex banner slot"
+            rows.append(
+                (
+                    profile_id,
+                    role_scope,
+                    index,
+                    stat_name,
+                    color_group,
+                    multiplier,
+                    quality_tier,
+                    quality_bonus_pct,
+                    trait_name,
+                    trait_bonus_pct,
+                    adjacency_group,
+                    slot_kind,
+                    enabled,
+                    locked_flag,
+                    slot_notes,
+                )
+            )
+    if rows:
+        cur.executemany(
+            """
+            INSERT OR REPLACE INTO fantasy_banner_instance_slots(
+                profile_id, role_scope, slot_index, stat_name, color_group, multiplier,
+                quality_tier, quality_bonus_pct, trait_name, trait_bonus_pct,
+                adjacency_group, slot_kind, enabled, locked_flag, notes, updated_at_utc
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+            """,
+            rows,
+        )
+
+
 def create_or_replace_banner_profile(
     connection: sqlite3.Connection,
     profile_id: str,
@@ -314,6 +451,9 @@ def create_or_replace_banner_profile(
     owner_name: str = "local_user",
     set_default: bool = False,
     description: str | None = None,
+    event_id: str = "ti2026",
+    template_id: str | None = None,
+    source_label: str = "user_banner_constructor",
     commit: bool = True,
 ) -> str:
     """Create/update a fantasy banner profile and recalculate all dependent scores.
@@ -391,10 +531,52 @@ def create_or_replace_banner_profile(
                 _title_rows_from_spec(profile_id, title_spec),
             )
 
+    sync_complex_banner_profile(
+        connection,
+        profile_id,
+        banner_spec,
+        event_id=event_id,
+        profile_name=profile_name,
+        template_id=template_id,
+        source_label=source_label,
+        notes=description,
+    )
+
     recalculate_profile_scores(connection, profile_id)
     if commit:
         connection.commit()
     return profile_id
+
+
+def create_or_replace_complex_banner_profile(
+    connection: sqlite3.Connection,
+    profile_id: str,
+    banner_spec: dict[str, list[dict[str, Any] | tuple[str, float]]],
+    *,
+    title_spec: list[dict[str, Any]] | None = None,
+    profile_name: str | None = None,
+    owner_name: str = "local_user",
+    set_default: bool = False,
+    description: str | None = None,
+    event_id: str = "ti2026",
+    template_id: str | None = PLAYOFF_TEMPLATE_ID,
+    source_label: str = "complex_banner_constructor",
+    commit: bool = True,
+) -> str:
+    return create_or_replace_banner_profile(
+        connection,
+        profile_id,
+        banner_spec,
+        title_spec=title_spec,
+        profile_name=profile_name,
+        owner_name=owner_name,
+        set_default=set_default,
+        description=description or "Complex banner profile with rich slot metadata.",
+        event_id=event_id,
+        template_id=template_id,
+        source_label=source_label,
+        commit=commit,
+    )
 
 
 def set_profile_title_rules(

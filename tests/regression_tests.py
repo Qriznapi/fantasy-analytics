@@ -61,7 +61,8 @@ def test_files() -> None:
         PROJECT_DIR / "scripts" / "run_cleanup_consistency_pass.py",
         PROJECT_DIR / "scripts" / "sync_summary_backfill_columns.py",
         PROJECT_DIR / "scripts" / "refresh_role_category_stats_view.py",
-        PROJECT_DIR / "docs" / "database_guide.md",
+        PROJECT_DIR / "docs" / "DATA_AND_DATABASE.md",
+        PROJECT_DIR / "docs" / "RESEARCH_ARCHITECTURE.md",
         PROJECT_DIR / "README.md",
     ]
     for path in required:

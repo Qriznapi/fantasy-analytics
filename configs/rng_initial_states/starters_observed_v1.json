@@ -1,0 +1,203 @@
+{
+  "preset_id": "starters_observed_v1",
+  "display_name": "Starters observed bootstrap v1",
+  "description": "Bootstrap priors manually summarized from the provided starters.pdf sample. Intended as a pragmatic initial-state generator until a larger starter-screen dataset is collected.",
+  "source_mode": "manual_visible_counts_from_starters_pdf",
+  "global_priors": {
+    "quality_weights": [
+      {"quality_tier": "tier_i", "weight": 5},
+      {"quality_tier": "tier_ii", "weight": 9},
+      {"quality_tier": "tier_iii", "weight": 14},
+      {"quality_tier": "tier_iv", "weight": 20},
+      {"quality_tier": "tier_v", "weight": 28}
+    ],
+    "trait_weights": [
+      {"trait_name": "fractal", "weight": 6},
+      {"trait_name": "benevolent", "weight": 16},
+      {"trait_name": "vampiric", "weight": 26},
+      {"trait_name": "unique", "weight": 7},
+      {"trait_name": "friendly", "weight": 9}
+    ],
+    "generic_color_stat_weights": {
+      "red": [
+        {"stat_name": "creep_score", "weight": 18},
+        {"stat_name": "deaths", "weight": 12},
+        {"stat_name": "opm", "weight": 10},
+        {"stat_name": "gpm", "weight": 8},
+        {"stat_name": "kills", "weight": 7},
+        {"stat_name": "tower_kills", "weight": 5},
+        {"stat_name": "madstone_collected", "weight": 2}
+      ],
+      "green": [
+        {"stat_name": "teamfight_participation", "weight": 30},
+        {"stat_name": "roshan_kills", "weight": 8},
+        {"stat_name": "tormentor_kills", "weight": 5},
+        {"stat_name": "stuns", "weight": 2},
+        {"stat_name": "first_blood", "weight": 2},
+        {"stat_name": "courier_kills", "weight": 1}
+      ],
+      "blue": [
+        {"stat_name": "runes_grabbed", "weight": 18},
+        {"stat_name": "watchers_taken", "weight": 12},
+        {"stat_name": "smokes_used", "weight": 10},
+        {"stat_name": "camps_stacked", "weight": 7},
+        {"stat_name": "lotus", "weight": 6},
+        {"stat_name": "wards_placed", "weight": 3}
+      ]
+    }
+  },
+  "role_rules": {
+    "core": {
+      "fixed_slots": [1, 2, 3],
+      "sampled_slots": [4, 5],
+      "slot_priors": [
+        {
+          "slot_index": 4,
+          "color_group": "green",
+          "stat_weights": [
+            {"stat_name": "teamfight_participation", "weight": 18},
+            {"stat_name": "roshan_kills", "weight": 7},
+            {"stat_name": "tormentor_kills", "weight": 4}
+          ],
+          "quality_weights": [
+            {"quality_tier": "tier_iii", "weight": 8},
+            {"quality_tier": "tier_iv", "weight": 12},
+            {"quality_tier": "tier_v", "weight": 16}
+          ],
+          "trait_weights": [
+            {"trait_name": "benevolent", "weight": 10},
+            {"trait_name": "vampiric", "weight": 12},
+            {"trait_name": "friendly", "weight": 4},
+            {"trait_name": "unique", "weight": 3},
+            {"trait_name": "fractal", "weight": 2}
+          ]
+        },
+        {
+          "slot_index": 5,
+          "color_group": "red",
+          "stat_weights": [
+            {"stat_name": "creep_score", "weight": 10},
+            {"stat_name": "deaths", "weight": 8},
+            {"stat_name": "gpm", "weight": 6},
+            {"stat_name": "kills", "weight": 5},
+            {"stat_name": "tower_kills", "weight": 4},
+            {"stat_name": "madstone_collected", "weight": 2},
+            {"stat_name": "opm", "weight": 2}
+          ],
+          "quality_weights": [
+            {"quality_tier": "tier_iii", "weight": 7},
+            {"quality_tier": "tier_iv", "weight": 11},
+            {"quality_tier": "tier_v", "weight": 15}
+          ],
+          "trait_weights": [
+            {"trait_name": "vampiric", "weight": 12},
+            {"trait_name": "benevolent", "weight": 6},
+            {"trait_name": "fractal", "weight": 4},
+            {"trait_name": "unique", "weight": 3},
+            {"trait_name": "friendly", "weight": 2}
+          ]
+        }
+      ]
+    },
+    "mid": {
+      "fixed_slots": [1, 2, 3],
+      "sampled_slots": [4, 5],
+      "slot_priors": [
+        {
+          "slot_index": 4,
+          "color_group": "red",
+          "stat_weights": [
+            {"stat_name": "gpm", "weight": 10},
+            {"stat_name": "creep_score", "weight": 8},
+            {"stat_name": "kills", "weight": 6},
+            {"stat_name": "opm", "weight": 6}
+          ],
+          "quality_weights": [
+            {"quality_tier": "tier_iii", "weight": 7},
+            {"quality_tier": "tier_iv", "weight": 12},
+            {"quality_tier": "tier_v", "weight": 16}
+          ],
+          "trait_weights": [
+            {"trait_name": "vampiric", "weight": 13},
+            {"trait_name": "benevolent", "weight": 5},
+            {"trait_name": "friendly", "weight": 4},
+            {"trait_name": "unique", "weight": 3},
+            {"trait_name": "fractal", "weight": 2}
+          ]
+        },
+        {
+          "slot_index": 5,
+          "color_group": "green",
+          "stat_weights": [
+            {"stat_name": "teamfight_participation", "weight": 20},
+            {"stat_name": "roshan_kills", "weight": 4},
+            {"stat_name": "tormentor_kills", "weight": 2}
+          ],
+          "quality_weights": [
+            {"quality_tier": "tier_iii", "weight": 6},
+            {"quality_tier": "tier_iv", "weight": 11},
+            {"quality_tier": "tier_v", "weight": 15}
+          ],
+          "trait_weights": [
+            {"trait_name": "vampiric", "weight": 10},
+            {"trait_name": "unique", "weight": 6},
+            {"trait_name": "friendly", "weight": 5},
+            {"trait_name": "benevolent", "weight": 4},
+            {"trait_name": "fractal", "weight": 2}
+          ]
+        }
+      ]
+    },
+    "support": {
+      "fixed_slots": [1, 2, 3],
+      "sampled_slots": [4, 5],
+      "slot_priors": [
+        {
+          "slot_index": 4,
+          "color_group": "green",
+          "stat_weights": [
+            {"stat_name": "teamfight_participation", "weight": 18},
+            {"stat_name": "tormentor_kills", "weight": 5},
+            {"stat_name": "roshan_kills", "weight": 2}
+          ],
+          "quality_weights": [
+            {"quality_tier": "tier_iii", "weight": 7},
+            {"quality_tier": "tier_iv", "weight": 11},
+            {"quality_tier": "tier_v", "weight": 16}
+          ],
+          "trait_weights": [
+            {"trait_name": "vampiric", "weight": 9},
+            {"trait_name": "benevolent", "weight": 8},
+            {"trait_name": "friendly", "weight": 7},
+            {"trait_name": "unique", "weight": 3},
+            {"trait_name": "fractal", "weight": 2}
+          ]
+        },
+        {
+          "slot_index": 5,
+          "color_group": "blue",
+          "stat_weights": [
+            {"stat_name": "watchers_taken", "weight": 12},
+            {"stat_name": "smokes_used", "weight": 10},
+            {"stat_name": "lotus", "weight": 8},
+            {"stat_name": "camps_stacked", "weight": 6},
+            {"stat_name": "wards_placed", "weight": 4},
+            {"stat_name": "runes_grabbed", "weight": 4}
+          ],
+          "quality_weights": [
+            {"quality_tier": "tier_iii", "weight": 6},
+            {"quality_tier": "tier_iv", "weight": 10},
+            {"quality_tier": "tier_v", "weight": 15}
+          ],
+          "trait_weights": [
+            {"trait_name": "vampiric", "weight": 10},
+            {"trait_name": "friendly", "weight": 8},
+            {"trait_name": "benevolent", "weight": 7},
+            {"trait_name": "unique", "weight": 3},
+            {"trait_name": "fractal", "weight": 2}
+          ]
+        }
+      ]
+    }
+  }
+}

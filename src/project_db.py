@@ -63,3 +63,13 @@ def shadow_db_status(
         "resolved_path": resolve_db_path(project_root, event_id=event_id),
         "shadow_copy_present": canonical.exists() and legacy.exists(),
     }
+
+
+def infer_project_root_from_db_path(db_path: str | Path) -> Path:
+    path = Path(db_path)
+    parent = path.parent
+    if parent.name == "data":
+        return parent.parent
+    if parent.name == "db" and parent.parent.name == "data":
+        return parent.parent.parent
+    return PROJECT_ROOT

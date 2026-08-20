@@ -1,0 +1,62 @@
+{
+  "preset_id": "placeholder_uniform_v1",
+  "display_name": "Placeholder uniform token preset",
+  "description": "Foundation preset used before the real token inventory and roll frequencies are known. It enables the full RNG optimizer pipeline, but its distributions are only generic placeholders and should not be treated as live-client probabilities.",
+  "inventory_mode": "unbounded_placeholder",
+  "benchmark_policy": "ewc2026_only",
+  "default_objective_mode": "balanced",
+  "token_specs": [
+    {
+      "token_type": "reroll_stat",
+      "display_name": "Reroll stat",
+      "enabled": true,
+      "max_uses": 1,
+      "role_scopes": [
+        "core",
+        "mid",
+        "support"
+      ],
+      "slot_indices": "all",
+      "notes": "Placeholder stat-only reroll available on every slot."
+    },
+    {
+      "token_type": "reroll_quality",
+      "display_name": "Reroll quality",
+      "enabled": true,
+      "max_uses": 1,
+      "role_scopes": [
+        "core",
+        "mid",
+        "support"
+      ],
+      "slot_indices": "all",
+      "notes": "Placeholder quality-only reroll available on every slot."
+    },
+    {
+      "token_type": "reroll_trait",
+      "display_name": "Reroll trait",
+      "enabled": true,
+      "max_uses": 1,
+      "role_scopes": [
+        "core",
+        "mid",
+        "support"
+      ],
+      "slot_indices": "all",
+      "notes": "Placeholder trait-only reroll available on every slot."
+    },
+    {
+      "token_type": "reroll_emblem",
+      "display_name": "Reroll full emblem",
+      "enabled": true,
+      "max_uses": 1,
+      "role_scopes": [
+        "core",
+        "mid",
+        "support"
+      ],
+      "slot_indices": "all",
+      "notes": "Placeholder full-emblem reroll available on every slot."
+    }
+  ]
+}

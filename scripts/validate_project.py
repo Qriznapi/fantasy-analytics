@@ -14,15 +14,17 @@ REQUIRED_FILES = [
     PROJECT_ROOT / "README.md",
     PROJECT_ROOT / "requirements.txt",
     PROJECT_ROOT / "notebooks" / "02_fact_agent.ipynb",
-    PROJECT_ROOT / "notebooks" / "ewc2026_fact_agent_demo.ipynb",
+    PROJECT_ROOT / "notebooks" / "ewc2026_fact_agent_colab.ipynb",
     SRC_DIR / "ewc_fact_agent_tools.py",
     SRC_DIR / "fantasy_profile_constructor.py",
     SRC_DIR / "fantasy_banner_optimizer.py",
     PROJECT_ROOT / "dashboard" / "app.py",
     PROJECT_ROOT / "tests" / "regression_tests.py",
-    PROJECT_ROOT / "docs" / "ARCHITECTURE.md",
-    PROJECT_ROOT / "docs" / "MODELING.md",
-    PROJECT_ROOT / "docs" / "DATA_SOURCES.md",
+    PROJECT_ROOT / "docs" / "README.md",
+    PROJECT_ROOT / "docs" / "DATA_AND_DATABASE.md",
+    PROJECT_ROOT / "docs" / "ANALYTICS_AND_AGENT.md",
+    PROJECT_ROOT / "docs" / "RESEARCH_ARCHITECTURE.md",
+    PROJECT_ROOT / "docs" / "RNG_ACTOR_CRITIC.md",
 ]
 
 
@@ -36,7 +38,7 @@ def main() -> None:
         if not path.exists():
             if path == DB_PATH:
                 raise SystemExit(
-                    "Missing local database. Build it first using docs/BUILD_DATABASE.md "
+                    "Missing local database. Build it first using docs/DATA_AND_DATABASE.md "
                     f"(expected path: {DB_PATH})."
                 )
             raise SystemExit(f"Missing required file: {path}")

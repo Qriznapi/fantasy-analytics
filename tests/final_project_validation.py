@@ -23,7 +23,8 @@ DB_PATH = resolve_db_path()
 REQUIRED_FILES = [
     DB_PATH,
     PROJECT_DIR / "README.md",
-    PROJECT_DIR / "docs" / "database_guide.md",
+    PROJECT_DIR / "docs" / "DATA_AND_DATABASE.md",
+    PROJECT_DIR / "docs" / "RESEARCH_ARCHITECTURE.md",
     PROJECT_DIR / "notebooks" / "01_collect_to_sqlite.ipynb",
     PROJECT_DIR / "notebooks" / "02_fact_agent.ipynb",
     PROJECT_DIR / "src" / "ewc_fact_agent_tools.py",

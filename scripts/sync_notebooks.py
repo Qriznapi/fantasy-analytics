@@ -62,6 +62,7 @@ import pandas as pd
 # - "flat_colab" : files uploaded into one flat runtime directory such as /content
 NOTEBOOK_LAYOUT = "{default_layout}"
 NOTEBOOK_EVENT_ID = "{default_event_id}"
+BENCHMARK_EVENT_ID = "ewc2026"
 
 CUSTOM_PROJECT_ROOT = {custom_project_root_literal}
 CUSTOM_SRC_DIR = {custom_src_dir_literal}
@@ -73,6 +74,7 @@ EVENT_DB_FILENAMES = {{
     "ti2026": "ti_2026_fantasy_compact.sqlite",
 }}
 DEFAULT_DB_FILENAME = EVENT_DB_FILENAMES.get(NOTEBOOK_EVENT_ID, EVENT_DB_FILENAMES["ewc2026"])
+DEFAULT_BENCHMARK_DB_FILENAME = EVENT_DB_FILENAMES.get(BENCHMARK_EVENT_ID, EVENT_DB_FILENAMES["ewc2026"])
 
 
 def _unique_paths(items):
@@ -207,6 +209,9 @@ def resolve_db_path_for_event(event_id: str) -> Path:
     return candidates[0]
 
 
+BENCHMARK_DB_PATH = resolve_db_path_for_event(BENCHMARK_EVENT_ID)
+
+
 def sql_df_from_db(db_path, query: str, params=None):
     con = sqlite3.connect(str(db_path))
     try:
@@ -239,9 +244,13 @@ else:
 
 print("Layout mode:", NOTEBOOK_LAYOUT)
 print("Notebook event:", NOTEBOOK_EVENT_ID)
+print("Benchmark event:", BENCHMARK_EVENT_ID)
 print("Project root:", PROJECT_ROOT)
 print("Source dir:", SRC_DIR)
 print("Database path:", DB_PATH)
+print("Benchmark DB path:", BENCHMARK_DB_PATH)
+if NOTEBOOK_EVENT_ID == "ti2026" and BENCHMARK_EVENT_ID != "ewc2026":
+    print("Warning: TI 2026 is currently intended as an inference target; benchmark defaults are expected to stay on ewc2026.")
 print(explain_system_short())
 """
 
@@ -1088,11 +1097,9 @@ def write_notebook(path: Path, cells: list[dict]) -> None:
 def main() -> None:
     NOTEBOOKS_DIR.mkdir(parents=True, exist_ok=True)
     write_notebook(NOTEBOOKS_DIR / "02_fact_agent.ipynb", notebook_cells("project", demo=False))
-    write_notebook(NOTEBOOKS_DIR / "ewc2026_fact_agent_demo.ipynb", notebook_cells("flat_colab", demo=True))
     write_notebook(NOTEBOOKS_DIR / "ewc2026_fact_agent_colab.ipynb", notebook_cells("flat_colab", demo=True))
     print("synced notebooks:")
     print(NOTEBOOKS_DIR / "02_fact_agent.ipynb")
-    print(NOTEBOOKS_DIR / "ewc2026_fact_agent_demo.ipynb")
     print(NOTEBOOKS_DIR / "ewc2026_fact_agent_colab.ipynb")
 
 

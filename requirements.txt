@@ -1,2 +1,5 @@
+numpy
 pandas
 streamlit
+torch>=2.13,<2.14
+Pillow

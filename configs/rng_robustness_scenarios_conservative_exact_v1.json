@@ -1,0 +1,9 @@
+{
+  "scenario_set_id": "rng_robustness_conservative_exact_v1",
+  "description": "Exact-token, conservative-starter scenarios for post-bootstrap PPO selection. They are not comparable to legacy generic-token champion reports.",
+  "scenarios": [
+    {"scenario_id": "red_tilt_safe_conservative", "objective_mode": "safe", "token_preset_path": "configs/rng_tokens/observed_run1_8_materials_blended_red_tilt_v4.json", "initial_state_preset_path": "configs/rng_initial_states/starters_conservative_v4.json"},
+    {"scenario_id": "red_tilt_balanced_conservative", "objective_mode": "balanced", "token_preset_path": "configs/rng_tokens/observed_run1_8_materials_blended_red_tilt_v4.json", "initial_state_preset_path": "configs/rng_initial_states/starters_conservative_v4.json"},
+    {"scenario_id": "red_tilt_ceiling_conservative", "objective_mode": "ceiling", "token_preset_path": "configs/rng_tokens/observed_run1_8_materials_blended_red_tilt_v4.json", "initial_state_preset_path": "configs/rng_initial_states/starters_conservative_v4.json"}
+  ]
+}
