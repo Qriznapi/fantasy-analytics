@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dota-fantasy-analytics"
+version = "0.1.0"
+description = "Reproducible Dota fantasy analytics and sequential banner optimization."
+requires-python = ">=3.10"
+dependencies = ["numpy", "pandas", "streamlit", "torch>=2.13,<2.14", "Pillow"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
